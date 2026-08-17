@@ -1,0 +1,32 @@
+{
+  "holdout": {
+    "both_undefined_rows": 500,
+    "both_undefined_systems": 25,
+    "cohort": "PINDER-AF2",
+    "continuous_dockq_changed_rows": 299,
+    "continuous_dockq_changed_systems": 25,
+    "maximum_removed_symmetry_gain": 0.2121122079666513,
+    "one_undefined_rows": 100,
+    "one_undefined_systems": 5,
+    "primary_class_changed_rows": 0,
+    "primary_class_changed_systems": 0,
+    "rows": 3600,
+    "systems": 180
+  },
+  "primary_threshold": 0.23,
+  "rule": "Missing/UNDEFINED accession tokens never establish chain-exchange eligibility; affected rows use the stored fixed-mapping direct_DockQ.",
+  "training": {
+    "both_undefined_rows": 240,
+    "both_undefined_systems": 12,
+    "cohort": "Training500",
+    "continuous_dockq_changed_rows": 130,
+    "continuous_dockq_changed_systems": 11,
+    "maximum_removed_symmetry_gain": 0.07210886444206688,
+    "one_undefined_rows": 100,
+    "one_undefined_systems": 5,
+    "primary_class_changed_rows": 0,
+    "primary_class_changed_systems": 0,
+    "rows": 10000,
+    "systems": 500
+  }
+}

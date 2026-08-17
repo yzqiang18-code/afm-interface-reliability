@@ -1,0 +1,62 @@
+{
+  "hash_note": "model_sha256 hashes model.json without its volatile created_at_utc field; byte-identical output additionally requires the pinned environment (environment.yml)",
+  "inputs": {
+    "configs/ml/candidate_ridge_v1.json": "1c53325689194b4b32ebeb505af3ee0799324fbc167259324446ea3cf9719056",
+    "results/data/pinder_af2_180_labels.csv.gz": "dac5705cc4266172361525f3432093da3c7d65a3a550a9c0179ef78eab479e43",
+    "results/data/training500_candidates.csv.gz": "780954ec8f3a3af4420a71b872bc0426b6d1f4ae1db6863d21175bef140d4f18"
+  },
+  "model_sha256": "7f98bf298bcac6a914e47a6f88498594904a1fefd21b159865e21a735d78a7c7",
+  "pinder_af2": {
+    "AF-M full-precision rank-1": {
+      "acceptable_rate": 0.5833333333333334,
+      "mean_DockQ": 0.4523995232915598,
+      "median_DockQ": 0.593104632474706,
+      "systems": 180
+    },
+    "candidate_ridge_v1": {
+      "acceptable_rate": 0.5833333333333334,
+      "mean_DockQ": 0.453850207225718,
+      "median_DockQ": 0.5942087916685794,
+      "systems": 180
+    }
+  },
+  "predictions_sha256": "fa7dee3c1230dc931c8edbe81217877fb7801eef0e60f7e4e8660dfcbd52beae",
+  "schema_version": 2,
+  "training500": {
+    "afm_top1": {
+      "acceptable_rate": 0.6,
+      "mean_DockQ": 0.42434334416814606,
+      "median_DockQ": 0.4482989660479395,
+      "systems": 500
+    },
+    "candidates": 10000,
+    "oracle_best_of_20": {
+      "acceptable_rate": 0.776,
+      "mean_DockQ": 0.5232719456003563,
+      "median_DockQ": 0.5945253747511456,
+      "systems": 500
+    },
+    "systems": 500
+  },
+  "uniprot_overlap_sensitivity": {
+    "delta_acceptable_rate": 0.0,
+    "delta_mean_DockQ": 0.0014587883136786828,
+    "excluded_holdout_system_ids": [
+      "8cnx__A1_Q68T42--8cnx__B1_Q68T42"
+    ],
+    "selector_metrics": {
+      "AF-M full-precision rank-1": {
+        "acceptable_rate": 0.5865921787709497,
+        "mean_DockQ": 0.45447915617885726,
+        "median_DockQ": 0.6038126877246222,
+        "systems": 179
+      },
+      "candidate_ridge_v1": {
+        "acceptable_rate": 0.5865921787709497,
+        "mean_DockQ": 0.45593794449253594,
+        "median_DockQ": 0.6060210061123688,
+        "systems": 179
+      }
+    }
+  }
+}

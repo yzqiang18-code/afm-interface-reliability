@@ -1,0 +1,19 @@
+name: afm-interface-reliability
+
+channels:
+  - conda-forge
+
+dependencies:
+  - python=3.11
+  - numpy=1.26
+  - pandas=2.2
+  - pyarrow=17
+  - scipy=1.13
+  - biopython=1.83
+  - requests=2.32
+  - tqdm=4.66
+  - freesasa=2.2.1
+  - networkx=3.3
+  - parallelbar=2.5
+  - matplotlib=3.10
+  - pip

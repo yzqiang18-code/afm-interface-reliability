@@ -1,0 +1,45 @@
+{
+  "artifacts": [
+    {
+      "bytes": 1740664,
+      "path": "results/data/training500_candidates.csv.gz",
+      "rows": 10000,
+      "sha256": "780954ec8f3a3af4420a71b872bc0426b6d1f4ae1db6863d21175bef140d4f18"
+    },
+    {
+      "bytes": 609886,
+      "path": "results/data/pinder_af2_180_labels.csv.gz",
+      "rows": 3600,
+      "sha256": "dac5705cc4266172361525f3432093da3c7d65a3a550a9c0179ef78eab479e43"
+    },
+    {
+      "bytes": 74524,
+      "path": "results/data/training500_manifest.csv",
+      "rows": 500,
+      "sha256": "560a1e134831b1c112085a3e0355789947be2bd81bbb3d185d25bccb2c575522"
+    },
+    {
+      "bytes": 22037,
+      "path": "results/data/pinder_af2_180_manifest.csv",
+      "rows": 180,
+      "sha256": "02cb8334764ae9ca75385952d8fea7a6fa7a4636505b16e137d8d52fde8161e8"
+    }
+  ],
+  "contains_local_paths": false,
+  "contains_raw_coordinates": false,
+  "schema_version": 1,
+  "source_files": [
+    {
+      "name": "training500_candidates.csv",
+      "sha256": "0bf69de06446b5b78c01495e1f4db81177db953399eeafc82b1fb2d8f3cbe3ca"
+    },
+    {
+      "name": "pinder_af2_180_labels.csv",
+      "sha256": "3422f22d718277034a394855b29bc8c54a9cfb7f7968e40876973a4ca31b79be"
+    },
+    {
+      "name": "pinder_2024-02_index.parquet",
+      "sha256": "ced1936c4f36ea79161579df8d4b23bb4862b9c88f30af9defeeb85af99adac4"
+    }
+  ]
+}

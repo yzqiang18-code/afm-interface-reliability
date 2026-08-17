@@ -1,0 +1,4 @@
+model,features,prediction_roc_auc,prediction_average_precision,prediction_brier,selector_acceptable_rate,selector_medium_high_rate,selector_mean_DockQ,selector_median_DockQ
+M1_ipTM,iptm_full_precision,0.854826181126714,0.8269957240711251,0.15386686361177607,0.604,0.474,0.42513753570763413,0.4428712077596298
+M2_AF_confidence,iptm_full_precision;ptm_full_precision;pDockQ2_min;iLIS;ipSAE,0.85424491380592,0.8176333248746995,0.15095480133815622,0.604,0.476,0.42679832124419037,0.4576325578750069
+M3_AF_plus_physics,iptm_full_precision;ptm_full_precision;pDockQ2_min;iLIS;ipSAE;log1p_bsa_a2;bsa_per_interface_residue;negative_clash_density;negative_backbone_clashes;largest_contact_component_fraction;salt_bridge_density;negative_same_charge_density,0.8592194034181247,0.8273295856158344,0.14985868945449451,0.592,0.476,0.42361043779730767,0.43804175940330947

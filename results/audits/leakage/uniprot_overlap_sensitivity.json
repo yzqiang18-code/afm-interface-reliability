@@ -1,0 +1,21 @@
+{
+  "delta_acceptable_rate": 0.0,
+  "delta_mean_DockQ": 0.0014587883136786828,
+  "excluded_holdout_system_ids": [
+    "8cnx__A1_Q68T42--8cnx__B1_Q68T42"
+  ],
+  "selector_metrics": {
+    "AF-M full-precision rank-1": {
+      "acceptable_rate": 0.5865921787709497,
+      "mean_DockQ": 0.45447915617885726,
+      "median_DockQ": 0.6038126877246222,
+      "systems": 179
+    },
+    "candidate_ridge_v1": {
+      "acceptable_rate": 0.5865921787709497,
+      "mean_DockQ": 0.45593794449253594,
+      "median_DockQ": 0.6060210061123688,
+      "systems": 179
+    }
+  }
+}

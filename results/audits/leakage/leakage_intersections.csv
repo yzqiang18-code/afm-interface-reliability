@@ -1,0 +1,2 @@
+level,value,training_system_ids,holdout_system_ids
+uniprot_pair,Q68T42|Q68T42,7jre__A1_Q68T42--7jre__B1_Q68T42,8cnx__A1_Q68T42--8cnx__B1_Q68T42

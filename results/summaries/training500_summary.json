@@ -1,0 +1,160 @@
+{
+  "cohort": {
+    "systems": 500,
+    "predictions": 10000,
+    "predictions_per_system": 20,
+    "seeds": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "model_weights": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "same_uniprot_systems": 313,
+    "different_uniprot_systems": 187
+  },
+  "quality": {
+    "all_prediction_acceptable_rate": 0.5074,
+    "top1_acceptable_rate": 0.6,
+    "top1_medium_high_rate": 0.476,
+    "top1_high_rate": 0.178,
+    "oracle20_acceptable_rate": 0.776,
+    "oracle20_medium_high_rate": 0.582,
+    "oracle_rescue_count": 88,
+    "never_acceptable_count": 112,
+    "all_models_acceptable_count": 163,
+    "top1_error_count": 200,
+    "mean_top1_oracle_gap": 0.09892860143221027,
+    "median_top1_oracle_gap": 0.02719557083922225
+  },
+  "selection": {
+    "rank1_mean_DockQ": 0.42434334416814606,
+    "rank1_median_DockQ": 0.4482989660479395,
+    "oracle_mean_DockQ": 0.5232719456003563,
+    "oracle_median_DockQ": 0.5945253747511456,
+    "oof_selector_acceptable_rates": {
+      "M1_ipTM": 0.604,
+      "M2_AF_confidence": 0.604,
+      "M3_AF_plus_physics": 0.592
+    },
+    "system_oof_roc_auc": {
+      "S1_top1_AF": 0.7960333333333334,
+      "S2_top1_AF_plus_physics": 0.7905,
+      "S3_top1_AF_plus_ensemble": 0.8115333333333333,
+      "S4_all_features": 0.80855
+    }
+  },
+  "consistency": {
+    "median_mean_contact_jaccard": 0.45366082402838626,
+    "median_max_cluster_fraction": 0.65,
+    "median_pose_rmsd": 7.642855360690427,
+    "stable_wrong_count": 17,
+    "spearman_jaccard_vs_acceptable_fraction": 0.654973608988626,
+    "spearman_jaccard_vs_dockq_range": -0.41398811995247975,
+    "spearman_pose_rmsd_vs_dockq_range": 0.4223272893091572
+  },
+  "data_quality": {
+    "expected_systems": 500,
+    "expected_predictions": 10000,
+    "expected_pairs": 95000,
+    "observed_rows": {
+      "confidence": 10000,
+      "dockq": 10000,
+      "ilis": 10000,
+      "pdockq2": 10000,
+      "physics": 10000,
+      "consistency_models": 10000,
+      "consistency_summary": 500,
+      "consistency_pairs": 95000,
+      "metadata": 500,
+      "assignment": 500
+    },
+    "observed_systems": 500,
+    "duplicate_model_keys": 0,
+    "systems_not_exactly_20_predictions": 0,
+    "systems_without_ranks_1_to_20": 0,
+    "systems_without_four_seeds": 0,
+    "systems_without_five_weights": 0,
+    "merge_audits": [
+      {
+        "source": "confidence",
+        "before_rows": 10000,
+        "after_rows": 10000,
+        "unmatched_rows": 0
+      },
+      {
+        "source": "ilis",
+        "before_rows": 10000,
+        "after_rows": 10000,
+        "unmatched_rows": 0
+      },
+      {
+        "source": "pdockq2",
+        "before_rows": 10000,
+        "after_rows": 10000,
+        "unmatched_rows": 0
+      },
+      {
+        "source": "physics",
+        "before_rows": 10000,
+        "after_rows": 10000,
+        "unmatched_rows": 0
+      },
+      {
+        "source": "consistency_models",
+        "before_rows": 10000,
+        "after_rows": 10000,
+        "unmatched_rows": 0
+      }
+    ],
+    "required_metric_missingness": {
+      "DockQ": 0,
+      "ranking_confidence": 0,
+      "iptm_full_precision": 0,
+      "ptm_full_precision": 0,
+      "iLIS": 0,
+      "ipSAE": 0,
+      "pDockQ2_min": 0,
+      "contact_pair_count": 0,
+      "bsa_a2": 0,
+      "clash_count": 0
+    },
+    "dockq_status_counts": {
+      "ok": 10000
+    },
+    "pdockq2_status_counts": {
+      "ok": 10000
+    },
+    "physics_status_counts": {
+      "ok": 10000
+    },
+    "physics_interface_status_counts": {
+      "ok": 9994,
+      "empty_interface": 6
+    },
+    "consistency_status_counts": {
+      "ok": 500
+    },
+    "ensemble_incomplete_count": 0,
+    "invalid_pair_counts": {
+      "heavy_atom_invalid": 108,
+      "cb8_invalid": 74
+    },
+    "invalid_pair_rates": {
+      "heavy_atom_invalid": 0.0011368421052631579,
+      "cb8_invalid": 0.0007789473684210527
+    },
+    "symmetry_mapping_rows": 6260,
+    "fixed_mapping_rows": 3740,
+    "swapped_mapping_rows": 3272,
+    "swapped_mapping_systems": 303,
+    "positive_symmetry_gain_rows": 3272
+  },
+  "selection_bias": "Training500 is a deliberately stratified training set selected from seed-0 screening classes, with difficult and rerank-informative cases oversampled. Aggregate rates are descriptive of this training cohort and are not unbiased PINDER-Val benchmark estimates."
+}

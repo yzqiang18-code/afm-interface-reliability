@@ -1,0 +1,162 @@
+{
+  "created_at_utc": "2026-08-16T13:18:17.322305+00:00",
+  "final_solver": {
+    "converged": true,
+    "iterations": 6,
+    "max_abs_final_step": 1.0039971333408637e-11,
+    "max_iter": 200,
+    "tolerance": 1e-10,
+    "used_least_squares_fallback": false
+  },
+  "fold_solver_audits": [
+    {
+      "converged": true,
+      "fold": 0,
+      "iterations": 6,
+      "max_abs_final_step": 3.814764861503586e-11,
+      "max_iter": 200,
+      "tolerance": 1e-10,
+      "train_rows": 8000,
+      "train_systems": 400,
+      "used_least_squares_fallback": false,
+      "validation_rows": 2000,
+      "validation_systems": 100
+    },
+    {
+      "converged": true,
+      "fold": 1,
+      "iterations": 6,
+      "max_abs_final_step": 1.8976259536781005e-12,
+      "max_iter": 200,
+      "tolerance": 1e-10,
+      "train_rows": 8000,
+      "train_systems": 400,
+      "used_least_squares_fallback": false,
+      "validation_rows": 2000,
+      "validation_systems": 100
+    },
+    {
+      "converged": true,
+      "fold": 2,
+      "iterations": 6,
+      "max_abs_final_step": 2.2285775287781704e-12,
+      "max_iter": 200,
+      "tolerance": 1e-10,
+      "train_rows": 8000,
+      "train_systems": 400,
+      "used_least_squares_fallback": false,
+      "validation_rows": 2000,
+      "validation_systems": 100
+    },
+    {
+      "converged": true,
+      "fold": 3,
+      "iterations": 6,
+      "max_abs_final_step": 1.4741835062313466e-11,
+      "max_iter": 200,
+      "tolerance": 1e-10,
+      "train_rows": 8000,
+      "train_systems": 400,
+      "used_least_squares_fallback": false,
+      "validation_rows": 2000,
+      "validation_systems": 100
+    },
+    {
+      "converged": true,
+      "fold": 4,
+      "iterations": 6,
+      "max_abs_final_step": 4.1715258028976093e-11,
+      "max_iter": 200,
+      "tolerance": 1e-10,
+      "train_rows": 8000,
+      "train_systems": 400,
+      "used_least_squares_fallback": false,
+      "validation_rows": 2000,
+      "validation_systems": 100
+    }
+  ],
+  "model_name": "candidate_ridge_v1",
+  "oof_candidate_metrics": {
+    "average_precision": 0.8176333248746995,
+    "brier": 0.15095480133815622,
+    "positive_count": 5074,
+    "positive_rate": 0.5074,
+    "roc_auc": 0.85424491380592,
+    "rows": 10000
+  },
+  "oof_paired_bootstrap": {
+    "bootstrap_replicates": 2000,
+    "delta_acceptable_rate": 0.0040000000000000036,
+    "delta_acceptable_rate_ci_high": 0.014000000000000012,
+    "delta_acceptable_rate_ci_low": -0.006000000000000005,
+    "delta_mean_DockQ": 0.002454977076044307,
+    "delta_mean_DockQ_ci_high": 0.008369089987715135,
+    "delta_mean_DockQ_ci_low": -0.003763206132376673,
+    "random_seed": 20260815,
+    "systems": 500
+  },
+  "oof_selector_metrics": {
+    "model": {
+      "acceptable_rate": 0.604,
+      "high_rate": 0.172,
+      "mean_DockQ": 0.42679832124419037,
+      "median_DockQ": 0.4576325578750069,
+      "medium_high_rate": 0.476,
+      "selector": "candidate_ridge_v1",
+      "systems": 500
+    },
+    "reference": {
+      "acceptable_rate": 0.6,
+      "high_rate": 0.178,
+      "mean_DockQ": 0.42434334416814606,
+      "median_DockQ": 0.4482989660479395,
+      "medium_high_rate": 0.476,
+      "selector": "AF-M full-precision rank-1",
+      "systems": 500
+    }
+  },
+  "output_files": {
+    "bootstrap": "oof_paired_bootstrap.csv",
+    "candidate_metrics": "oof_candidate_metrics.csv",
+    "model": "model.json",
+    "oof_predictions": "oof_predictions.csv",
+    "selector_choices": "oof_selector_choices.csv",
+    "selector_summary": "oof_selector_summary.csv",
+    "summary": "training_summary.json"
+  },
+  "training_input_audit": {
+    "candidates_per_system": 20,
+    "duplicate_candidate_keys": 0,
+    "feature_missing_counts": {
+      "iLIS": 0,
+      "ipSAE": 0,
+      "iptm_full_precision": 0,
+      "pDockQ2_min": 0,
+      "ptm_full_precision": 0
+    },
+    "feature_missing_fractions": {
+      "iLIS": 0.0,
+      "ipSAE": 0.0,
+      "iptm_full_precision": 0.0,
+      "pDockQ2_min": 0.0,
+      "ptm_full_precision": 0.0
+    },
+    "fold_system_counts": {
+      "0": 100,
+      "1": 100,
+      "2": 100,
+      "3": 100,
+      "4": 100
+    },
+    "label_mapping_mode_counts": {
+      "fixed": 3740,
+      "symmetry_aware": 6260
+    },
+    "positive_count": 5074,
+    "positive_rate": 0.5074,
+    "rows": 10000,
+    "same_known_accession_systems": 313,
+    "systems": 500,
+    "undefined_accession_systems": 17
+  }
+}

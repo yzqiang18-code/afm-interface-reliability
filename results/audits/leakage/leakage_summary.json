@@ -1,0 +1,16 @@
+{
+  "holdout_systems": 180,
+  "interpretation": "Exact system, PDB, and interface-cluster overlap are release gates. Chain-cluster and UniProt-pair overlaps are disclosed and require sensitivity analysis rather than being silently removed.",
+  "intersection_counts": {
+    "chain_cluster_pair": 0,
+    "cluster_id": 0,
+    "id": 0,
+    "pdb_id": 0,
+    "uniprot_pair": 1
+  },
+  "official_index_sha256": "ced1936c4f36ea79161579df8d4b23bb4862b9c88f30af9defeeb85af99adac4",
+  "pinder_release": "2024-02",
+  "release_gate_passed": true,
+  "training_systems": 500,
+  "undefined_uniprot_pairs_excluded": true
+}

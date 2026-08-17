@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Environments and editors
+.venv/
+venv/
+env/
+.conda/
+.vscode/
+.idea/
+.DS_Store
+
+# Credentials and local settings
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Large or regenerable scientific assets
+/data/
+/raw_data/
+/predictions/
+/msas/
+/checkpoints/
+/model_parameters/
+/reproduced/
+*.a3m
+*.tar
+*.tar.gz
+*.zip
+*.pkl
+*.pickle
+
+# Structures are excluded except for the two tiny committed test fixtures
+*.pdb
+!tests/fixtures/**/*.pdb
+*.cif
+*.mmcif
+
+# Analysis intermediates (curated results/ is committed)
+analysis/generated/
+results/generated/
+scratch/
+tmp/
+*.log
+*.inspect.ndjson

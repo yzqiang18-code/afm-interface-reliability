@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+<title id="title">AF-M interface reliability workflow</title>
+<desc id="desc">Frozen PINDER cohorts; native structures are used only for labels and evaluation</desc>
+<style>
+text{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif;fill:#172033}
+.title{font-size:30px;font-weight:700}.subtitle{font-size:16px;fill:#5F6B7A}
+.label{font-size:17px}.small{font-size:14px;fill:#5F6B7A}.value{font-size:18px;font-weight:700}
+.kpi{font-size:38px;font-weight:750}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+</style>
+<rect width="1200" height="675" fill="#FFFFFF"/>
+<text x="64.0" y="66.0" class="title" text-anchor="start">AF-M interface reliability workflow</text>
+<rect x="52" y="218" width="204" height="190" rx="16" fill="#DCEAF8" stroke="#2867B2" stroke-width="2"/>
+<circle cx="82" cy="249" r="18" fill="#2867B2"/>
+<text x="82.0" y="255.0" class="value" text-anchor="middle">1</text>
+<text x="70.0" y="300.0" class="value" text-anchor="start">PINDER cohorts</text>
+<text x="70.0" y="336.0" class="small" text-anchor="start">50 feasibility</text>
+<text x="70.0" y="363.0" class="small" text-anchor="start">500 development</text>
+<text x="70.0" y="390.0" class="small" text-anchor="start">180 holdout</text>
+<line x1="261" y1="313" x2="273" y2="313" stroke="#172033" stroke-width="2"/>
+<path d="M 268 307 L 276 313 L 268 319" fill="none" stroke="#172033" stroke-width="2"/>
+<rect x="278" y="218" width="204" height="190" rx="16" fill="#DCEAF8" stroke="#2867B2" stroke-width="2"/>
+<circle cx="308" cy="249" r="18" fill="#2867B2"/>
+<text x="308.0" y="255.0" class="value" text-anchor="middle">2</text>
+<text x="296.0" y="300.0" class="value" text-anchor="start">Sequence &amp; MSA</text>
+<text x="296.0" y="336.0" class="small" text-anchor="start">resolved residues</text>
+<text x="296.0" y="363.0" class="small" text-anchor="start">paired + unpaired A3M</text>
+<line x1="487" y1="313" x2="499" y2="313" stroke="#172033" stroke-width="2"/>
+<path d="M 494 307 L 502 313 L 494 319" fill="none" stroke="#172033" stroke-width="2"/>
+<rect x="504" y="218" width="204" height="190" rx="16" fill="#DCEAF8" stroke="#2867B2" stroke-width="2"/>
+<circle cx="534" cy="249" r="18" fill="#2867B2"/>
+<text x="534.0" y="255.0" class="value" text-anchor="middle">3</text>
+<text x="522.0" y="300.0" class="value" text-anchor="start">AF-M sampling</text>
+<text x="522.0" y="336.0" class="small" text-anchor="start">v2.3</text>
+<text x="522.0" y="363.0" class="small" text-anchor="start">multiple seeds</text>
+<text x="522.0" y="390.0" class="small" text-anchor="start">five model weights</text>
+<line x1="713" y1="313" x2="725" y2="313" stroke="#172033" stroke-width="2"/>
+<path d="M 720 307 L 728 313 L 720 319" fill="none" stroke="#172033" stroke-width="2"/>
+<rect x="730" y="218" width="204" height="190" rx="16" fill="#F6E8BE" stroke="#D39A24" stroke-width="2"/>
+<circle cx="760" cy="249" r="18" fill="#D39A24"/>
+<text x="760.0" y="255.0" class="value" text-anchor="middle">4</text>
+<text x="748.0" y="300.0" class="value" text-anchor="start">Multi-signal metrics</text>
+<text x="748.0" y="336.0" class="small" text-anchor="start">AF + interface confidence</text>
+<text x="748.0" y="363.0" class="small" text-anchor="start">physics</text>
+<text x="748.0" y="390.0" class="small" text-anchor="start">ensemble consistency</text>
+<line x1="939" y1="313" x2="951" y2="313" stroke="#172033" stroke-width="2"/>
+<path d="M 946 307 L 954 313 L 946 319" fill="none" stroke="#172033" stroke-width="2"/>
+<rect x="956" y="218" width="204" height="190" rx="16" fill="#F6E8BE" stroke="#D39A24" stroke-width="2"/>
+<circle cx="986" cy="249" r="18" fill="#D39A24"/>
+<text x="986.0" y="255.0" class="value" text-anchor="middle">5</text>
+<text x="974.0" y="300.0" class="value" text-anchor="start">Modeling &amp; evaluation</text>
+<text x="974.0" y="336.0" class="small" text-anchor="start">candidate reranking</text>
+<text x="974.0" y="363.0" class="small" text-anchor="start">symmetry-aware DockQ</text>
+<text x="974.0" y="390.0" class="small" text-anchor="start">grouped OOF + holdout</text>
+<rect x="245" y="455" width="710" height="75" rx="12" fill="#F5F7FA" stroke="#DDE3EA"/>
+<text x="600.0" y="486.0" class="value" text-anchor="middle">No native-derived feature enters model inputs</text>
+<text x="600.0" y="512.0" class="small" text-anchor="middle">Native-referenced DockQ, Fnat, iRMSD, and LRMSD are used only for labels and evaluation</text>
+</svg>

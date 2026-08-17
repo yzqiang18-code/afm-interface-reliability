@@ -1,0 +1,33 @@
+name: scientific-validation
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test-and-reproduce:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -el {0}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create the pinned Conda environment
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          environment-file: environment.yml
+          activate-environment: afm-interface-reliability
+          auto-activate-base: false
+
+      - name: Run tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Validate committed evidence
+        run: python scripts/validate_repository.py
+
+      - name: Reproduce model and figures on CPU
+        env:
+          MPLCONFIGDIR: ${{ runner.temp }}/matplotlib
+        run: python scripts/reproduce_level2.py --output-dir ${{ runner.temp }}/afm-reproduced

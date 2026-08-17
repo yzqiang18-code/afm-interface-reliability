@@ -1,0 +1,91 @@
+{
+  "candidate_metrics": {
+    "average_precision": 0.9367047850172482,
+    "brier": 0.10097587959094456,
+    "positive_count": 1956,
+    "positive_rate": 0.5433333333333333,
+    "roc_auc": 0.9338494320302121,
+    "rows": 3600
+  },
+  "created_at_utc": "2026-08-16T13:18:18.012661+00:00",
+  "labels_audit": {
+    "candidates_per_system": 20,
+    "duplicate_candidate_keys": 0,
+    "feature_missing_counts": {
+      "iLIS": 0,
+      "ipSAE": 0,
+      "iptm_full_precision": 0,
+      "pDockQ2_min": 0,
+      "ptm_full_precision": 0
+    },
+    "feature_missing_fractions": {
+      "iLIS": 0.0,
+      "ipSAE": 0.0,
+      "iptm_full_precision": 0.0,
+      "pDockQ2_min": 0.0,
+      "ptm_full_precision": 0.0
+    },
+    "fold_system_counts": {},
+    "label_mapping_mode_counts": {
+      "fixed": 1060,
+      "symmetry_aware": 2540
+    },
+    "positive_count": 1956,
+    "positive_rate": 0.5433333333333333,
+    "rows": 3600,
+    "same_known_accession_systems": 127,
+    "systems": 180,
+    "undefined_accession_systems": 30
+  },
+  "labels_path": "results/data/pinder_af2_180_labels.csv.gz",
+  "labels_sha256": "dac5705cc4266172361525f3432093da3c7d65a3a550a9c0179ef78eab479e43",
+  "leakage_gate": {
+    "exact_system_overlap_count": 0,
+    "note": "This script checks exact system and PDB-ID overlap. The separate PINDER manifest audit records cluster and UniProt-pair overlap under results/audits/leakage/.",
+    "passed": true,
+    "pdb_id_overlap_count": 0
+  },
+  "model_name": "candidate_ridge_v1",
+  "model_path": "model.json",
+  "model_sha256": "0b3391877516f681e16e2aa3148737f7db59c45c045f20af30145c278b0b5845",
+  "output_files": {
+    "bootstrap": "paired_bootstrap.csv",
+    "candidate_metrics": "candidate_metrics.csv",
+    "selector_choices": "selector_choices.csv",
+    "selector_summary": "selector_summary.csv",
+    "summary": "evaluation_summary.json"
+  },
+  "paired_bootstrap": {
+    "bootstrap_replicates": 2000,
+    "delta_acceptable_rate": 0.0,
+    "delta_acceptable_rate_ci_high": 0.0,
+    "delta_acceptable_rate_ci_low": 0.0,
+    "delta_mean_DockQ": 0.0014506839341582034,
+    "delta_mean_DockQ_ci_high": 0.0047199607971581846,
+    "delta_mean_DockQ_ci_low": -0.0012887172506369782,
+    "random_seed": 20260815,
+    "systems": 180
+  },
+  "predictions_path": "pinder_af2_180_predictions.csv",
+  "predictions_sha256": "fa7dee3c1230dc931c8edbe81217877fb7801eef0e60f7e4e8660dfcbd52beae",
+  "selector_metrics": {
+    "model": {
+      "acceptable_rate": 0.5833333333333334,
+      "high_rate": 0.25555555555555554,
+      "mean_DockQ": 0.453850207225718,
+      "median_DockQ": 0.5942087916685794,
+      "medium_high_rate": 0.55,
+      "selector": "candidate_ridge_v1",
+      "systems": 180
+    },
+    "reference": {
+      "acceptable_rate": 0.5833333333333334,
+      "high_rate": 0.24444444444444444,
+      "mean_DockQ": 0.4523995232915598,
+      "median_DockQ": 0.593104632474706,
+      "medium_high_rate": 0.55,
+      "selector": "AF-M full-precision rank-1",
+      "systems": 180
+    }
+  }
+}

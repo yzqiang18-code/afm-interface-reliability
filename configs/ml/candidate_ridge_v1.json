@@ -1,0 +1,39 @@
+{
+  "bootstrap_replicates": 2000,
+  "expected_candidates_per_system": 20,
+  "expected_fold_values": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "feature_columns": [
+    "iptm_full_precision",
+    "ptm_full_precision",
+    "pDockQ2_min",
+    "iLIS",
+    "ipSAE"
+  ],
+  "fold_column": "cv_fold",
+  "group_column": "complex_id",
+  "key_columns": [
+    "complex_id",
+    "rank",
+    "model_weight",
+    "seed"
+  ],
+  "label_mapping_policy": {
+    "different_accession_mode": "fixed",
+    "mode_column": "mapping_mode",
+    "same_accession_mode": "symmetry_aware"
+  },
+  "max_missing_fraction_per_feature": 0.05,
+  "model_name": "candidate_ridge_v1",
+  "random_seed": 20260815,
+  "reference_score_column": "ranking_confidence",
+  "ridge_penalty": 1.0,
+  "target_column": "DockQ",
+  "target_threshold": 0.23,
+  "task": "predict DockQ >= 0.23 for each AF-M candidate and rerank 20 candidates within each protein-pair system"
+}
