@@ -1,0 +1,45 @@
+{
+  "created_at_utc": "2026-08-19T04:08:15.183300+00:00",
+  "input_audit": {
+    "candidates_per_system": 20,
+    "duplicate_candidate_keys": 0,
+    "feature_missing_counts": {
+      "iLIS": 0,
+      "interface_residue_count_total": 0,
+      "ipSAE": 0,
+      "iptm_full_precision": 0,
+      "pDockQ2_min": 0,
+      "ptm_full_precision": 0
+    },
+    "feature_missing_fractions": {
+      "iLIS": 0.0,
+      "interface_residue_count_total": 0.0,
+      "ipSAE": 0.0,
+      "iptm_full_precision": 0.0,
+      "pDockQ2_min": 0.0,
+      "ptm_full_precision": 0.0
+    },
+    "fold_system_counts": {},
+    "rows": 3600,
+    "systems": 180
+  },
+  "input_path": "results/data/pinder_af2_180_labels.csv.gz",
+  "input_sha256": "dac5705cc4266172361525f3432093da3c7d65a3a550a9c0179ef78eab479e43",
+  "model_name": "candidate_ridge_v1_iface_size",
+  "model_path": "results/ml/candidate_ridge_v1_iface_size/model.json",
+  "model_sha256": "a401782dd248813a0601660c7c960d27bf601ae4b4d3a9f004a3a3ae6cc72e32",
+  "output_columns": [
+    "complex_id",
+    "rank",
+    "model_weight",
+    "seed",
+    "ranking_confidence",
+    "acceptable_score",
+    "model_selected",
+    "reference_selected"
+  ],
+  "output_path": "results/ml/candidate_ridge_v1_iface_size/holdout/pinder_af2_180_predictions.csv",
+  "output_sha256": "045e6d07f8e7c6f09d31892efc1c88130c29de89bbf962c3575d9c7b448d2f49",
+  "selected_systems": 180,
+  "target_column_present_but_ignored": true
+}

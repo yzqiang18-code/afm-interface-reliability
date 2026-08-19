@@ -1,0 +1,2 @@
+rows,positive_count,positive_rate,roc_auc,average_precision,brier
+10000,5074,0.5074,0.8522694811071417,0.8120667118906679,0.15139137476693001
