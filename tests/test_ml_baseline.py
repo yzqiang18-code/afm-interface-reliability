@@ -61,6 +61,21 @@ class MLBaselineTests(unittest.TestCase):
                 "centering": "minus_0.5",
                 "missing_policy": "system_median_then_fold_median",
             }
+        if mode == "group_softmax":
+            payload["model_name"] = "synthetic_ridge_group_softmax"
+            payload["preprocessing"] = {
+                "mode": "within_system_rank",
+                "tie_method": "average",
+                "centering": "minus_0.5",
+                "missing_policy": "system_median_then_fold_median",
+            }
+            payload["loss"] = "group_softmax"
+            payload["loss_options"] = {
+                "target_mode": "binary_multi_positive",
+                "training_system_policy": "mixed_only",
+                "min_mixed_systems_per_fold": 1,
+                "temperature": None,
+            }
         path.write_text(json.dumps(payload), encoding="utf-8")
         return payload
 
@@ -415,6 +430,252 @@ class MLBaselineTests(unittest.TestCase):
             payload["preprocessing"] = {"mode": "quantum"}
             with self.assertRaisesRegex(ValueError, "unsupported preprocessing mode"):
                 core.validate_config(payload)
+
+    def test_unsupported_loss_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            config_path = Path(temporary) / "config.json"
+            payload = self.config(config_path)
+            payload["loss"] = "quantum"
+            with self.assertRaisesRegex(ValueError, "unsupported loss"):
+                core.validate_config(payload)
+
+    def test_group_softmax_requires_loss_options(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            config_path = Path(temporary) / "config.json"
+            payload = self.config(config_path)
+            payload["loss"] = "group_softmax"
+            payload.pop("loss_options", None)
+            with self.assertRaisesRegex(ValueError, "requires loss_options"):
+                core.validate_config(payload)
+            payload["loss_options"] = {"target_mode": "quantum"}
+            with self.assertRaisesRegex(ValueError, "unsupported target_mode"):
+                core.validate_config(payload)
+
+    def test_group_softmax_dockq_softmax_requires_temperature(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            config_path = Path(temporary) / "config.json"
+            payload = self.config(config_path)
+            payload["loss"] = "group_softmax"
+            payload["loss_options"] = {
+                "target_mode": "dockq_softmax",
+                "min_mixed_systems_per_fold": 1,
+                "temperature": None,
+            }
+            with self.assertRaisesRegex(ValueError, "positive temperature"):
+                core.validate_config(payload)
+
+    def test_group_softmax_synthetic_recovery(self) -> None:
+        rng = np.random.default_rng(0)
+        systems, n = 40, 20
+        x_list, y_list, g_list = [], [], []
+        for system in range(systems):
+            x = rng.normal(size=(n, 3))
+            logit = x[:, 0] * 2.0 + rng.normal(scale=0.5, size=n)
+            y = (logit > np.quantile(logit, 0.75)).astype(float)
+            x_list.append(x)
+            y_list.append(y)
+            g_list.append(np.full(n, system))
+        x = np.vstack(x_list)
+        y = np.concatenate(y_list)
+        g = np.concatenate(g_list)
+        weights, audit = core.fit_group_softmax(
+            x, y, np.zeros_like(y), g, penalty=1.0, min_mixed_systems=1
+        )
+        self.assertTrue(audit["converged"])
+        # 只有第一列携带信号；其余两列应收敛到接近 0
+        self.assertGreater(weights[0], 0.5)
+        self.assertLess(abs(weights[1]), 0.5)
+        self.assertLess(abs(weights[2]), 0.5)
+        # 组内 softmax 分数应把正例排在负例之前
+        scores = x @ weights
+        for system in range(systems):
+            rows = np.flatnonzero(g == system)
+            self.assertGreater(
+                scores[rows][y[rows] == 1].mean(),
+                scores[rows][y[rows] == 0].mean(),
+            )
+
+    def test_group_softmax_translation_invariant(self) -> None:
+        rng = np.random.default_rng(3)
+        systems, n = 20, 20
+        x_list, y_list, g_list = [], [], []
+        for system in range(systems):
+            x = rng.normal(size=(n, 2))
+            logit = x[:, 0] * 1.5 + rng.normal(scale=0.4, size=n)
+            y = (logit > np.quantile(logit, 0.7)).astype(float)
+            x_list.append(x)
+            y_list.append(y)
+            g_list.append(np.full(n, system))
+        x = np.vstack(x_list)
+        y = np.concatenate(y_list)
+        g = np.concatenate(g_list)
+        offset = np.array([0.3, -0.7])
+        weights_a, _ = core.fit_group_softmax(
+            x, y, np.zeros_like(y), g, penalty=1.0, min_mixed_systems=1
+        )
+        weights_b, _ = core.fit_group_softmax(
+            x + offset, y, np.zeros_like(y), g, penalty=1.0, min_mixed_systems=1
+        )
+        # 无截距：特征整体平移不改变组内 softmax 似然，权重应不变
+        np.testing.assert_allclose(weights_a, weights_b, atol=1e-8)
+
+    def test_group_softmax_single_class_systems_skipped(self) -> None:
+        rng = np.random.default_rng(1)
+        systems, n = 30, 20
+        x_list, y_list, g_list = [], [], []
+        for system in range(systems):
+            x = rng.normal(size=(n, 2))
+            y = np.ones(n) if system % 3 == 0 else np.zeros(n)
+            if system % 3 == 1:
+                y[:5] = 1.0
+            x_list.append(x)
+            y_list.append(y)
+            g_list.append(np.full(n, system))
+        x = np.vstack(x_list)
+        y = np.concatenate(y_list)
+        g = np.concatenate(g_list)
+        weights, audit = core.fit_group_softmax(
+            x, y, np.zeros_like(y), g, penalty=1.0, min_mixed_systems=1
+        )
+        # 30 个系统里每 3 个有 1 个 mixed（system % 3 == 1），共 10 个
+        self.assertEqual(audit["n_mixed_systems"], 10)
+        self.assertEqual(audit["n_training_systems"], 10)
+        self.assertEqual(audit["skipped_single_class_systems"], 20)
+        self.assertTrue(np.isfinite(weights).all())
+
+    def test_group_softmax_mixed_floor_guard(self) -> None:
+        rng = np.random.default_rng(2)
+        systems, n = 10, 20
+        x_list, y_list, g_list = [], [], []
+        for system in range(systems):
+            x = rng.normal(size=(n, 2))
+            y = (np.arange(n) < system).astype(float)
+            x_list.append(x)
+            y_list.append(y)
+            g_list.append(np.full(n, system))
+        x = np.vstack(x_list)
+        y = np.concatenate(y_list)
+        g = np.concatenate(g_list)
+        with self.assertRaisesRegex(ValueError, "at least 50 mixed systems"):
+            core.fit_group_softmax(
+                x, y, np.zeros_like(y), g, penalty=1.0, min_mixed_systems=50
+            )
+
+    def test_loss_dispatch_defaults_to_ridge(self) -> None:
+        rng = np.random.default_rng(4)
+        x = rng.normal(size=(30, 2))
+        y = (x[:, 0] + rng.normal(scale=0.5, size=30) > 0).astype(float)
+        with tempfile.TemporaryDirectory() as temporary:
+            config_path = Path(temporary) / "config.json"
+            payload = self.config(config_path)
+            payload.pop("loss", None)
+            model_fit, solver = core.fit_loss_dispatch(x, y, payload)
+        self.assertEqual(model_fit["loss"], "ridge_logistic")
+        self.assertEqual(len(model_fit["coefficients"]), 2)
+        self.assertTrue(solver["converged"])
+
+    def test_group_softmax_end_to_end_schema_v3(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            config_path = root / "config.json"
+            self.config(config_path, mode="group_softmax")
+            train_csv = root / "train.csv"
+            test_csv = root / "test.csv"
+            self.candidate_frame(
+                prefix="train", systems=10, include_folds=True
+            ).to_csv(train_csv, index=False)
+            self.candidate_frame(
+                prefix="test", systems=4, include_folds=False
+            ).to_csv(test_csv, index=False)
+            model_dir = root / "model"
+            self.assertEqual(
+                train.main(
+                    [
+                        "--train-csv",
+                        str(train_csv),
+                        "--config",
+                        str(config_path),
+                        "--output-dir",
+                        str(model_dir),
+                    ]
+                ),
+                0,
+            )
+            model = core.load_model(model_dir / "model.json")
+            self.assertEqual(model["model_schema_version"], 3)
+            self.assertEqual(model["loss"], "group_softmax")
+            self.assertEqual(model["intercept"], 0.0)
+            self.assertEqual(
+                model["solver"]["target_mode"], "binary_multi_positive"
+            )
+            prediction_csv = root / "predictions.csv"
+            self.assertEqual(
+                predict.main(
+                    [
+                        "--input-csv",
+                        str(test_csv),
+                        "--model",
+                        str(model_dir / "model.json"),
+                        "--output-csv",
+                        str(prediction_csv),
+                    ]
+                ),
+                0,
+            )
+            predictions = pd.read_csv(prediction_csv)
+            self.assertIn("acceptable_score", predictions.columns)
+            self.assertTrue(
+                predictions.groupby("complex_id")["model_selected"]
+                .sum()
+                .eq(1)
+                .all()
+            )
+            evaluation_dir = root / "evaluation"
+            self.assertEqual(
+                evaluate.main(
+                    [
+                        "--predictions-csv",
+                        str(prediction_csv),
+                        "--labels-csv",
+                        str(test_csv),
+                        "--model",
+                        str(model_dir / "model.json"),
+                        "--output-dir",
+                        str(evaluation_dir),
+                    ]
+                ),
+                0,
+            )
+
+    def test_load_model_rejects_loss_mismatch(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            config_path = root / "config.json"
+            self.config(config_path, mode="group_softmax")
+            train_csv = root / "train.csv"
+            self.candidate_frame(
+                prefix="train", systems=10, include_folds=True
+            ).to_csv(train_csv, index=False)
+            model_dir = root / "model"
+            self.assertEqual(
+                train.main(
+                    [
+                        "--train-csv",
+                        str(train_csv),
+                        "--config",
+                        str(config_path),
+                        "--output-dir",
+                        str(model_dir),
+                    ]
+                ),
+                0,
+            )
+            model_path = model_dir / "model.json"
+            artifact = json.loads(model_path.read_text(encoding="utf-8"))
+            artifact["loss"] = "ridge_logistic"
+            model_path.write_text(json.dumps(artifact), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "loss mismatch"):
+                core.load_model(model_path)
 
 
 if __name__ == "__main__":

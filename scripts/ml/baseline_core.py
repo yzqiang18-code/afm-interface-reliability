@@ -19,6 +19,14 @@ MODEL_SCHEMA_VERSION = 3
 SUPPORTED_MODEL_SCHEMA_VERSIONS = frozenset({2, 3})
 PREPROCESSING_MODE_ZSCORE = "zscore"
 PREPROCESSING_MODE_WITHIN_SYSTEM_RANK = "within_system_rank"
+LOSS_RIDGE_LOGISTIC = "ridge_logistic"
+LOSS_GROUP_SOFTMAX = "group_softmax"
+SUPPORTED_LOSSES = frozenset({LOSS_RIDGE_LOGISTIC, LOSS_GROUP_SOFTMAX})
+TARGET_MODE_BINARY_MULTI_POSITIVE = "binary_multi_positive"
+TARGET_MODE_DOCKQ_SOFTMAX = "dockq_softmax"
+SUPPORTED_TARGET_MODES = frozenset(
+    {TARGET_MODE_BINARY_MULTI_POSITIVE, TARGET_MODE_DOCKQ_SOFTMAX}
+)
 PREDICTION_SCORE_COLUMN = "acceptable_score"
 MODEL_SELECTED_COLUMN = "model_selected"
 REFERENCE_SELECTED_COLUMN = "reference_selected"
@@ -180,6 +188,24 @@ def validate_config(config: dict[str, Any]) -> dict[str, Any]:
                 raise ValueError(
                     "within_system_rank requires "
                     "missing_policy=system_median_then_fold_median"
+                )
+    loss = config.get("loss", LOSS_RIDGE_LOGISTIC)
+    if loss not in SUPPORTED_LOSSES:
+        raise ValueError(f"unsupported loss: {loss}")
+    if loss == LOSS_GROUP_SOFTMAX:
+        loss_options = config.get("loss_options")
+        if not isinstance(loss_options, dict):
+            raise ValueError("group_softmax requires loss_options")
+        target_mode = loss_options.get("target_mode")
+        if target_mode not in SUPPORTED_TARGET_MODES:
+            raise ValueError(f"unsupported target_mode: {target_mode}")
+        if int(loss_options.get("min_mixed_systems_per_fold", 20)) <= 0:
+            raise ValueError("min_mixed_systems_per_fold must be positive")
+        if target_mode == TARGET_MODE_DOCKQ_SOFTMAX:
+            temperature = loss_options.get("temperature")
+            if temperature is None or float(temperature) <= 0:
+                raise ValueError(
+                    "dockq_softmax requires a positive temperature in loss_options"
                 )
     return config
 
@@ -546,6 +572,192 @@ def fit_ridge_logistic(
     }
 
 
+def _group_softmax_soft_targets(dockq: np.ndarray, temperature: float) -> np.ndarray:
+    """Within-system softmax of continuous DockQ used as a soft target."""
+    logits = np.asarray(dockq, dtype=float) / float(temperature)
+    logits = logits - logits.max()
+    probabilities = np.exp(logits)
+    return probabilities / probabilities.sum()
+
+
+def fit_group_softmax(
+    x: np.ndarray,
+    y: np.ndarray,
+    dockq: np.ndarray,
+    group_codes: np.ndarray,
+    *,
+    penalty: float,
+    target_mode: str = TARGET_MODE_BINARY_MULTI_POSITIVE,
+    temperature: float = 0.1,
+    min_mixed_systems: int = 20,
+    max_iter: int = 200,
+    tolerance: float = 1e-10,
+) -> tuple[np.ndarray, dict[str, Any]]:
+    """Fit L2-regularized conditional logit (within-system softmax) with Newton.
+
+    No intercept: adding a constant to every candidate's score in a system is
+    cancelled by the within-system softmax, so the intercept is not identified
+    and is dropped; scores are comparable within a system only.
+
+    ``binary_multi_positive`` trains on mixed systems only (systems containing
+    both an acceptable and an unacceptable candidate); the positive terms are
+    the acceptable candidates, matching the ``DockQ >= threshold`` endpoint.
+
+    ``dockq_softmax`` trains on all systems with a within-system soft target
+    ``softmax(DockQ / temperature)``; DockQ is used only as a label here.
+    """
+    x = np.asarray(x, dtype=float)
+    y = np.asarray(y, dtype=float)
+    dockq = np.asarray(dockq, dtype=float)
+    group_codes = np.asarray(group_codes)
+    if x.ndim != 2 or y.ndim != 1 or dockq.ndim != 1 or group_codes.ndim != 1:
+        raise ValueError("Invalid shapes for group softmax regression")
+    if not (len(x) == len(y) == len(dockq) == len(group_codes)):
+        raise ValueError("x/y/dockq/group_codes must have the same length")
+    if set(np.unique(y)) != {0.0, 1.0}:
+        raise ValueError("Group softmax requires binary acceptable labels")
+    if float(penalty) <= 0:
+        raise ValueError("penalty must be positive")
+
+    systems = np.unique(group_codes)
+    rows_by_system = [np.flatnonzero(group_codes == system) for system in systems]
+    if target_mode == TARGET_MODE_BINARY_MULTI_POSITIVE:
+        train_rows = [
+            rows
+            for rows in rows_by_system
+            if y[rows].min() == 0 and y[rows].max() == 1
+        ]
+        if len(train_rows) < min_mixed_systems:
+            raise ValueError(
+                f"Group softmax needs at least {min_mixed_systems} mixed systems, "
+                f"found {len(train_rows)}"
+            )
+    else:
+        train_rows = rows_by_system
+
+    weights = np.zeros(x.shape[1], dtype=float)
+
+    def soft_targets(rows: np.ndarray) -> np.ndarray:
+        if target_mode == TARGET_MODE_DOCKQ_SOFTMAX:
+            return _group_softmax_soft_targets(dockq[rows], temperature)
+        positive = y[rows] == 1
+        return positive / float(positive.sum())
+
+    def loss(weights_vector: np.ndarray) -> float:
+        total = float(penalty) * float(weights_vector @ weights_vector)
+        for rows in train_rows:
+            linear = x[rows] @ weights_vector
+            linear = linear - linear.max()
+            probabilities = np.exp(linear)
+            probabilities /= probabilities.sum()
+            total -= float(soft_targets(rows) @ np.log(probabilities))
+        return total
+
+    converged = False
+    iterations = 0
+    last_step = float("nan")
+    used_lstsq = False
+    for iteration in range(1, max_iter + 1):
+        iterations = iteration
+        gradient = 2.0 * float(penalty) * weights
+        information = np.eye(x.shape[1]) * (2.0 * float(penalty))
+        for rows in train_rows:
+            linear = x[rows] @ weights
+            linear = linear - linear.max()
+            probabilities = np.exp(linear)
+            probabilities /= probabilities.sum()
+            targets = soft_targets(rows)
+            gradient += probabilities @ x[rows] - targets @ x[rows]
+            weighted = probabilities[:, None] * x[rows]
+            information += weighted.T @ x[rows] - np.outer(
+                weighted.sum(axis=0), weighted.sum(axis=0)
+            )
+        try:
+            step = np.linalg.solve(information, gradient)
+        except np.linalg.LinAlgError:
+            step = np.linalg.lstsq(information, gradient, rcond=None)[0]
+            used_lstsq = True
+        scale = 1.0
+        current = loss(weights)
+        while loss(weights - scale * step) > current and scale > 1e-10:
+            scale *= 0.5
+        weights = weights - scale * step
+        last_step = float(np.max(np.abs(scale * step)))
+        if last_step < tolerance:
+            converged = True
+            break
+
+    if not np.isfinite(weights).all():
+        raise ValueError("Group softmax solver produced non-finite coefficients")
+    if not converged:
+        raise RuntimeError(
+            f"Group softmax solver did not converge after {max_iter} iterations"
+        )
+    n_mixed_systems = int(
+        sum(1 for rows in rows_by_system if y[rows].min() == 0 and y[rows].max() == 1)
+    )
+    return weights, {
+        "converged": converged,
+        "iterations": iterations,
+        "max_abs_final_step": last_step,
+        "used_least_squares_fallback": used_lstsq,
+        "max_iter": max_iter,
+        "tolerance": tolerance,
+        "penalty": float(penalty),
+        "target_mode": target_mode,
+        "n_training_systems": len(train_rows),
+        "n_mixed_systems": n_mixed_systems,
+        "skipped_single_class_systems": len(rows_by_system) - n_mixed_systems,
+    }
+
+
+def fit_loss_dispatch(
+    x: np.ndarray,
+    target: np.ndarray,
+    config: dict[str, Any],
+    *,
+    group_codes: np.ndarray | None = None,
+    dockq: np.ndarray | None = None,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Fit ridge logistic or group softmax per config['loss'].
+
+    Returns (model_fit, solver_audit); model_fit has keys ``intercept``,
+    ``coefficients`` and ``loss`` so callers can build the frozen artifact
+    uniformly.
+    """
+    loss = config.get("loss", LOSS_RIDGE_LOGISTIC)
+    penalty = float(config["ridge_penalty"])
+    if loss == LOSS_GROUP_SOFTMAX:
+        if group_codes is None or dockq is None:
+            raise ValueError("group_softmax requires group_codes and dockq")
+        options = config.get("loss_options", {})
+        target_mode = str(
+            options.get("target_mode", TARGET_MODE_BINARY_MULTI_POSITIVE)
+        )
+        temperature = options.get("temperature")
+        weights, solver = fit_group_softmax(
+            x,
+            target,
+            dockq,
+            group_codes,
+            penalty=penalty,
+            target_mode=target_mode,
+            temperature=float(temperature) if temperature is not None else 0.1,
+            min_mixed_systems=int(options.get("min_mixed_systems_per_fold", 20)),
+        )
+        return {
+            "intercept": 0.0,
+            "coefficients": weights.tolist(),
+            "loss": LOSS_GROUP_SOFTMAX,
+        }, solver
+    coefficients, solver = fit_ridge_logistic(x, target, penalty=penalty)
+    return {
+        "intercept": float(coefficients[0]),
+        "coefficients": coefficients[1:].tolist(),
+        "loss": LOSS_RIDGE_LOGISTIC,
+    }, solver
+
+
 def predict_probabilities(x: np.ndarray, coefficients: np.ndarray) -> np.ndarray:
     design = np.column_stack([np.ones(len(x)), np.asarray(x, dtype=float)])
     coefficients = np.asarray(coefficients, dtype=float)
@@ -738,6 +950,12 @@ def load_model(path: Path) -> dict[str, Any]:
         raise ValueError(
             f"preprocessing mode mismatch: config={config_mode} "
             f"artifact={artifact_mode}"
+        )
+    config_loss = model["config"].get("loss", LOSS_RIDGE_LOGISTIC)
+    artifact_loss = model.get("loss", LOSS_RIDGE_LOGISTIC)
+    if config_loss != artifact_loss:
+        raise ValueError(
+            f"loss mismatch: config={config_loss} artifact={artifact_loss}"
         )
     return model
 

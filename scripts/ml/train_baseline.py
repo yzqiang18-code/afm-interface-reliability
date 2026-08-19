@@ -12,6 +12,8 @@ import numpy as np
 import pandas as pd
 
 from baseline_core import (
+    LOSS_GROUP_SOFTMAX,
+    LOSS_RIDGE_LOGISTIC,
     MODEL_SCHEMA_VERSION,
     PREDICTION_SCORE_COLUMN,
     PREPROCESSING_MODE_WITHIN_SYSTEM_RANK,
@@ -20,8 +22,8 @@ from baseline_core import (
     atomic_write_json,
     candidate_metrics,
     check_output_targets,
+    fit_loss_dispatch,
     fit_preprocessor_dispatch,
-    fit_ridge_logistic,
     load_json,
     paired_selector_bootstrap,
     portable_path,
@@ -70,15 +72,21 @@ def fit_model(
         preprocessing_config=config.get("preprocessing"),
         group_column=str(config["group_column"]),
     )
-    coefficients, solver = fit_ridge_logistic(
+    group_codes = pd.factorize(
+        frame[str(config["group_column"])].astype(str)
+    )[0]
+    fitted, solver = fit_loss_dispatch(
         transformed,
         target,
-        penalty=float(config["ridge_penalty"]),
+        config,
+        group_codes=group_codes,
+        dockq=frame[target_column].to_numpy(dtype=float),
     )
     return {
         "preprocessing": preprocessing,
-        "intercept": float(coefficients[0]),
-        "coefficients": coefficients[1:].tolist(),
+        "intercept": fitted["intercept"],
+        "coefficients": fitted["coefficients"],
+        "loss": fitted["loss"],
     }, solver
 
 
@@ -115,10 +123,17 @@ def oof_predictions(
             preprocessing,
             group_column=str(config["group_column"]),
         )
-        coefficients, solver = fit_ridge_logistic(
+        fitted, solver = fit_loss_dispatch(
             transformed_train,
             target[train_mask],
-            penalty=float(config["ridge_penalty"]),
+            config,
+            group_codes=pd.factorize(
+                training[str(config["group_column"])].astype(str)
+            )[0],
+            dockq=training[target_column].to_numpy(dtype=float),
+        )
+        coefficients = np.asarray(
+            [fitted["intercept"]] + fitted["coefficients"], dtype=float
         )
         predictions[validation_mask] = predict_probabilities(
             transformed_validation, coefficients
@@ -212,11 +227,13 @@ def main(argv: list[str] | None = None) -> int:
         )
 
         fitted, final_solver = fit_model(frame, config=config)
-        model_schema_version = (
-            MODEL_SCHEMA_VERSION
-            if config.get("preprocessing", {}).get("mode")
+        uses_new_schema_features = (
+            config.get("preprocessing", {}).get("mode")
             == PREPROCESSING_MODE_WITHIN_SYSTEM_RANK
-            else 2
+            or config.get("loss", LOSS_RIDGE_LOGISTIC) == LOSS_GROUP_SOFTMAX
+        )
+        model_schema_version = (
+            MODEL_SCHEMA_VERSION if uses_new_schema_features else 2
         )
         training_system_ids = sorted(
             frame[str(config["group_column"])].astype(str).unique().tolist()
@@ -246,6 +263,7 @@ def main(argv: list[str] | None = None) -> int:
             "preprocessing": fitted["preprocessing"],
             "intercept": fitted["intercept"],
             "coefficients": fitted["coefficients"],
+            "loss": fitted["loss"],
             "solver": final_solver,
             "oof_candidate_metrics": oof_candidate,
             "oof_selector_metrics": {

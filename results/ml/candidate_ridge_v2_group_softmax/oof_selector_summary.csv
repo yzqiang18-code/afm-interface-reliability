@@ -1,0 +1,3 @@
+selector,systems,acceptable_rate,medium_high_rate,high_rate,mean_DockQ,median_DockQ
+AF-M full-precision rank-1,500,0.6,0.476,0.178,0.42434334416814606,0.4482989660479395
+candidate_ridge_v2_group_softmax,500,0.602,0.476,0.178,0.42714503903824963,0.45817970024666266

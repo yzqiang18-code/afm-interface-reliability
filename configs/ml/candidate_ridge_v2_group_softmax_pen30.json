@@ -1,0 +1,52 @@
+{
+  "bootstrap_replicates": 2000,
+  "expected_candidates_per_system": 20,
+  "expected_fold_values": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "feature_columns": [
+    "iptm_full_precision",
+    "ptm_full_precision",
+    "pDockQ2_min",
+    "iLIS",
+    "ipSAE"
+  ],
+  "fold_column": "cv_fold",
+  "group_column": "complex_id",
+  "key_columns": [
+    "complex_id",
+    "rank",
+    "model_weight",
+    "seed"
+  ],
+  "label_mapping_policy": {
+    "different_accession_mode": "fixed",
+    "mode_column": "mapping_mode",
+    "same_accession_mode": "symmetry_aware"
+  },
+  "loss": "group_softmax",
+  "loss_options": {
+    "min_mixed_systems_per_fold": 20,
+    "target_mode": "binary_multi_positive",
+    "temperature": null,
+    "training_system_policy": "mixed_only"
+  },
+  "max_missing_fraction_per_feature": 0.05,
+  "model_name": "candidate_ridge_v2_group_softmax_pen30",
+  "preprocessing": {
+    "centering": "minus_0.5",
+    "missing_policy": "system_median_then_fold_median",
+    "mode": "within_system_rank",
+    "tie_method": "average"
+  },
+  "random_seed": 20260815,
+  "reference_score_column": "ranking_confidence",
+  "ridge_penalty": 30.0,
+  "target_column": "DockQ",
+  "target_threshold": 0.23,
+  "task": "predict DockQ >= 0.23 for each AF-M candidate and rerank 20 candidates within each protein-pair system using within-system quantile-rank features and a conditional-logit (group softmax) loss"
+}
