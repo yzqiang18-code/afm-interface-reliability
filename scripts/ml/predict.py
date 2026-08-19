@@ -13,7 +13,7 @@ from baseline_core import (
     MODEL_SELECTED_COLUMN,
     PREDICTION_SCORE_COLUMN,
     REFERENCE_SELECTED_COLUMN,
-    apply_preprocessor,
+    apply_preprocessor_dispatch,
     atomic_write_csv,
     atomic_write_json,
     check_output_targets,
@@ -67,10 +67,11 @@ def main(argv: list[str] | None = None) -> int:
             require_folds=False,
             source="prediction input CSV",
         )
-        transformed = apply_preprocessor(
+        transformed = apply_preprocessor_dispatch(
             frame,
             list(model["feature_columns"]),
             model["preprocessing"],
+            group_column=str(config["group_column"]),
         )
         probabilities = predict_probabilities(
             transformed, prediction_coefficients(model)

@@ -14,11 +14,13 @@ import pandas as pd
 from baseline_core import (
     MODEL_SCHEMA_VERSION,
     PREDICTION_SCORE_COLUMN,
+    PREPROCESSING_MODE_WITHIN_SYSTEM_RANK,
+    apply_preprocessor_dispatch,
     atomic_write_csv,
     atomic_write_json,
     candidate_metrics,
     check_output_targets,
-    fit_preprocessor,
+    fit_preprocessor_dispatch,
     fit_ridge_logistic,
     load_json,
     paired_selector_bootstrap,
@@ -62,7 +64,12 @@ def fit_model(
     target_column = str(config["target_column"])
     threshold = float(config["target_threshold"])
     target = frame[target_column].ge(threshold).astype(float).to_numpy()
-    transformed, preprocessing = fit_preprocessor(frame, feature_columns)
+    transformed, preprocessing = fit_preprocessor_dispatch(
+        frame,
+        feature_columns,
+        preprocessing_config=config.get("preprocessing"),
+        group_column=str(config["group_column"]),
+    )
     coefficients, solver = fit_ridge_logistic(
         transformed,
         target,
@@ -96,22 +103,18 @@ def oof_predictions(
             raise ValueError(f"Fold {fold} training partition contains one target class")
         training = frame.loc[train_mask]
         validation = frame.loc[validation_mask]
-        transformed_train, preprocessing = fit_preprocessor(
-            training, list(config["feature_columns"])
+        transformed_train, preprocessing = fit_preprocessor_dispatch(
+            training,
+            list(config["feature_columns"]),
+            preprocessing_config=config.get("preprocessing"),
+            group_column=str(config["group_column"]),
         )
-        transformed_validation = (
-            validation[list(config["feature_columns"])]
-            .apply(pd.to_numeric, errors="coerce")
-            .replace([np.inf, -np.inf], np.nan)
-            .to_numpy(dtype=float)
+        transformed_validation = apply_preprocessor_dispatch(
+            validation,
+            list(config["feature_columns"]),
+            preprocessing,
+            group_column=str(config["group_column"]),
         )
-        medians = np.asarray(preprocessing["medians"], dtype=float)
-        means = np.asarray(preprocessing["means"], dtype=float)
-        scales = np.asarray(preprocessing["scales"], dtype=float)
-        transformed_validation = (
-            np.where(np.isfinite(transformed_validation), transformed_validation, medians)
-            - means
-        ) / scales
         coefficients, solver = fit_ridge_logistic(
             transformed_train,
             target[train_mask],
@@ -209,11 +212,17 @@ def main(argv: list[str] | None = None) -> int:
         )
 
         fitted, final_solver = fit_model(frame, config=config)
+        model_schema_version = (
+            MODEL_SCHEMA_VERSION
+            if config.get("preprocessing", {}).get("mode")
+            == PREPROCESSING_MODE_WITHIN_SYSTEM_RANK
+            else 2
+        )
         training_system_ids = sorted(
             frame[str(config["group_column"])].astype(str).unique().tolist()
         )
         model_artifact = {
-            "model_schema_version": MODEL_SCHEMA_VERSION,
+            "model_schema_version": model_schema_version,
             "model_name": str(config["model_name"]),
             "task": str(config["task"]),
             "created_at_utc": utc_now(),

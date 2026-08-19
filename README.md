@@ -17,6 +17,18 @@ changed from **0.45240** to **0.45385**; the paired difference was `+0.00145`
 negative result is retained because it is the currently supported conclusion
 for this baseline.
 
+A within-system quantile-rank follow-up (`candidate_ridge_v1_within_rank`)
+replaced global standardization with per-system rank features. Its
+within-system ordering point estimate improved: on Training500 out-of-fold
+data the median within-system Spearman rose from `0.206` (v1 baseline) and
+`0.227` (AF-M's own ranking) to `0.243`. This difference is **not
+statistically significant** (system-level paired 95% CI `-0.018` to
+`+0.061` vs the v1 baseline). On the frozen PINDER-AF2 holdout it selected
+an acceptable structure for `58.89%` (106/180) versus `58.33%` (105/180)
+for both AF-M rank-1 and the v1 baseline — one additional system, with a
+paired 95% CI lower bound of `0.0000`. The selection conclusion is
+therefore unchanged.
+
 ![Current selection result](figures/top1_vs_oracle.svg)
 
 Training500 shows why the problem is worth studying: AF-M top-1 was acceptable

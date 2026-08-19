@@ -15,7 +15,10 @@ import numpy as np
 import pandas as pd
 
 
-MODEL_SCHEMA_VERSION = 2
+MODEL_SCHEMA_VERSION = 3
+SUPPORTED_MODEL_SCHEMA_VERSIONS = frozenset({2, 3})
+PREPROCESSING_MODE_ZSCORE = "zscore"
+PREPROCESSING_MODE_WITHIN_SYSTEM_RANK = "within_system_rank"
 PREDICTION_SCORE_COLUMN = "acceptable_score"
 MODEL_SELECTED_COLUMN = "model_selected"
 REFERENCE_SELECTED_COLUMN = "reference_selected"
@@ -112,7 +115,6 @@ def require_columns(
     if missing:
         raise ValueError(f"{source} is missing required columns: {missing}")
 
-
 def validate_config(config: dict[str, Any]) -> dict[str, Any]:
     required = {
         "model_name",
@@ -159,6 +161,26 @@ def validate_config(config: dict[str, Any]) -> dict[str, Any]:
         raise ValueError(
             f"label_mapping_policy is missing fields: {mapping_missing}"
         )
+    preprocessing = config.get("preprocessing")
+    if preprocessing is not None:
+        if not isinstance(preprocessing, dict):
+            raise ValueError("preprocessing must be a JSON object when present")
+        mode = preprocessing.get("mode", PREPROCESSING_MODE_ZSCORE)
+        if mode not in {
+            PREPROCESSING_MODE_ZSCORE,
+            PREPROCESSING_MODE_WITHIN_SYSTEM_RANK,
+        }:
+            raise ValueError(f"unsupported preprocessing mode: {mode}")
+        if mode == PREPROCESSING_MODE_WITHIN_SYSTEM_RANK:
+            if preprocessing.get("tie_method") != "average":
+                raise ValueError("within_system_rank requires tie_method=average")
+            if preprocessing.get("centering") != "minus_0.5":
+                raise ValueError("within_system_rank requires centering=minus_0.5")
+            if preprocessing.get("missing_policy") != "system_median_then_fold_median":
+                raise ValueError(
+                    "within_system_rank requires "
+                    "missing_policy=system_median_then_fold_median"
+                )
     return config
 
 
@@ -358,6 +380,113 @@ def apply_preprocessor(
         raise ValueError("Model preprocessing arrays do not match feature_columns")
     imputed = np.where(np.isfinite(values), values, medians)
     return (imputed - means) / scales
+
+
+def within_system_rank_transform(
+    frame: pd.DataFrame,
+    feature_columns: list[str],
+    *,
+    group_column: str = "complex_id",
+    medians: np.ndarray | None = None,
+) -> np.ndarray:
+    """Per-system centered fractional ranks in [-0.5 + 1/n, 0.5].
+
+    - ties -> average (iLIS/ipSAE are discrete and tie often, so average ranks
+      keep the transform deterministic and order-independent)
+    - constant feature within a system -> every candidate gets 1/(2n) (the
+      same value in every system because n is fixed at 20, so the intercept
+      absorbs it and the feature becomes neutral; no std==0 special case)
+    - missing -> system median, else the supplied (training-fold) global
+      median, imputed BEFORE ranking so imputed values tie in the middle
+    """
+    values = numeric_frame(frame, feature_columns)
+    group = frame[group_column].astype(str)
+    transformed = np.empty((len(frame), len(feature_columns)), dtype=float)
+    for j, column in enumerate(feature_columns):
+        col = values[column]
+        if medians is not None:
+            system_medians = col.groupby(group).transform("median")
+            fallback = float(np.asarray(medians)[j])
+            col = col.fillna(system_medians).fillna(fallback)
+        n_within = group.map(group.value_counts())
+        ranks = col.groupby(group).rank(method="average")
+        transformed[:, j] = (ranks / n_within - 0.5).to_numpy(dtype=float)
+    return transformed
+
+
+def fit_within_rank_preprocessor(
+    frame: pd.DataFrame,
+    feature_columns: list[str],
+    *,
+    group_column: str = "complex_id",
+) -> tuple[np.ndarray, dict[str, Any]]:
+    """Fit only the imputation medians; the rank transform itself needs no fit.
+
+    Returns (transformed, preprocessing), matching fit_preprocessor's order.
+    """
+    values = numeric_frame(frame, feature_columns).to_numpy(dtype=float)
+    medians = np.nanmedian(values, axis=0)
+    medians[~np.isfinite(medians)] = 0.0
+    transformed = within_system_rank_transform(
+        frame, feature_columns, group_column=group_column, medians=medians
+    )
+    preprocessing = {
+        "mode": PREPROCESSING_MODE_WITHIN_SYSTEM_RANK,
+        "medians": medians.tolist(),
+    }
+    return transformed, preprocessing
+
+
+def apply_within_rank_preprocessor(
+    frame: pd.DataFrame,
+    feature_columns: list[str],
+    preprocessing: dict[str, Any],
+    *,
+    group_column: str = "complex_id",
+) -> np.ndarray:
+    if preprocessing.get("mode") != PREPROCESSING_MODE_WITHIN_SYSTEM_RANK:
+        raise ValueError(
+            "preprocessing mode is not within_system_rank: "
+            f"{preprocessing.get('mode')}"
+        )
+    medians = np.asarray(preprocessing["medians"], dtype=float)
+    if medians.shape != (len(feature_columns),):
+        raise ValueError(
+            "within_system_rank medians do not match feature_columns"
+        )
+    return within_system_rank_transform(
+        frame, feature_columns, group_column=group_column, medians=medians
+    )
+
+
+def fit_preprocessor_dispatch(
+    frame: pd.DataFrame,
+    feature_columns: list[str],
+    preprocessing_config: dict[str, Any] | None = None,
+    *,
+    group_column: str = "complex_id",
+) -> tuple[dict[str, Any], np.ndarray]:
+    mode = (preprocessing_config or {}).get("mode", PREPROCESSING_MODE_ZSCORE)
+    if mode == PREPROCESSING_MODE_WITHIN_SYSTEM_RANK:
+        return fit_within_rank_preprocessor(
+            frame, feature_columns, group_column=group_column
+        )
+    return fit_preprocessor(frame, feature_columns)
+
+
+def apply_preprocessor_dispatch(
+    frame: pd.DataFrame,
+    feature_columns: list[str],
+    preprocessing: dict[str, Any],
+    *,
+    group_column: str = "complex_id",
+) -> np.ndarray:
+    mode = preprocessing.get("mode", PREPROCESSING_MODE_ZSCORE)
+    if mode == PREPROCESSING_MODE_WITHIN_SYSTEM_RANK:
+        return apply_within_rank_preprocessor(
+            frame, feature_columns, preprocessing, group_column=group_column
+        )
+    return apply_preprocessor(frame, feature_columns, preprocessing)
 
 
 def fit_ridge_logistic(
@@ -580,7 +709,7 @@ def paired_selector_bootstrap(
 
 def load_model(path: Path) -> dict[str, Any]:
     model = load_json(path)
-    if model.get("model_schema_version") != MODEL_SCHEMA_VERSION:
+    if model.get("model_schema_version") not in SUPPORTED_MODEL_SCHEMA_VERSIONS:
         raise ValueError(
             f"Unsupported model schema version: {model.get('model_schema_version')}"
         )
@@ -599,6 +728,17 @@ def load_model(path: Path) -> dict[str, Any]:
     validate_config(model["config"])
     if list(model["feature_columns"]) != list(model["config"]["feature_columns"]):
         raise ValueError("Model feature_columns differ from embedded config")
+    config_mode = model["config"].get("preprocessing", {}).get(
+        "mode", PREPROCESSING_MODE_ZSCORE
+    )
+    artifact_mode = model["preprocessing"].get(
+        "mode", PREPROCESSING_MODE_ZSCORE
+    )
+    if config_mode != artifact_mode:
+        raise ValueError(
+            f"preprocessing mode mismatch: config={config_mode} "
+            f"artifact={artifact_mode}"
+        )
     return model
 
 
