@@ -1,0 +1,68 @@
+{
+  "bootstrap_replicates": 2000,
+  "expected_candidates_per_system": 20,
+  "expected_fold_values": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "feature_columns": [
+    "j20_0",
+    "j20_1",
+    "j20_2",
+    "j20_3",
+    "j20_4",
+    "j20_5",
+    "j20_6",
+    "j20_7",
+    "j20_8",
+    "j20_9",
+    "j20_10",
+    "j20_11",
+    "j20_12",
+    "j20_13",
+    "j20_14",
+    "j20_15",
+    "j20_16",
+    "j20_17",
+    "j20_18",
+    "j20_19"
+  ],
+  "fold_column": "cv_fold",
+  "group_column": "complex_id",
+  "key_columns": [
+    "complex_id",
+    "rank",
+    "model_weight",
+    "seed"
+  ],
+  "label_mapping_policy": {
+    "different_accession_mode": "fixed",
+    "mode_column": "mapping_mode",
+    "same_accession_mode": "symmetry_aware"
+  },
+  "max_missing_fraction_per_feature": 0.05,
+  "model_name": "pairwise_jaccard_nn_1x20",
+  "nn": {
+    "activation": "relu",
+    "batch_size": 256,
+    "epochs": 80,
+    "hidden_sizes": [
+      32,
+      16
+    ],
+    "learning_rate": 0.01,
+    "weight_decay": 0.0001
+  },
+  "preprocessing": {
+    "mode": "zscore"
+  },
+  "random_seed": 20260820,
+  "reference_score_column": "ranking_confidence",
+  "ridge_penalty": 1.0,
+  "target_column": "DockQ",
+  "target_threshold": 0.23,
+  "task": "predict DockQ >= 0.23 for each AF-M candidate from its 1x20 within-system contact-Jaccard row vector (the 20x20 per-system matrix including the self diagonal = 1.0) and rerank the 20 candidates within each protein-pair system"
+}

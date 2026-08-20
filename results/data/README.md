@@ -6,6 +6,11 @@
 - `training500_consistency_pairs.csv.gz`: 95,000 path-free pairwise agreement
   rows (190 unordered candidate pairs for each of 500 Training500 systems), used
   only by the exploratory consistency and cluster diagnostic.
+- `training500_jaccard_rows.csv.gz`: 10,000 candidate rows derived from the pair
+  table — per-candidate 1×19 and 1×20 within-system contact-Jaccard row vectors
+  (canonical `(model_weight, seed)` slot order) plus `mean_j`. Used only by the
+  exploratory Jaccard-matrix neural network study
+  ([`docs/NN_JACCARD.md`](../../docs/NN_JACCARD.md)).
 - `*_manifest.csv`: system provenance used by overlap audits.
 - `data_manifest.json`: schemas, row counts, hashes, and preparation metadata.
 

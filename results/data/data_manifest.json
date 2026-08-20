@@ -25,6 +25,12 @@
       "sha256": "560a1e134831b1c112085a3e0355789947be2bd81bbb3d185d25bccb2c575522"
     },
     {
+      "bytes": 2598286,
+      "path": "results/data/training500_jaccard_rows.csv.gz",
+      "rows": 10000,
+      "sha256": "d0cfa4ec033b7cd935f8b68ce7f2abc59b0f6848ee1e65160cee02c8acc4a106"
+    },
+    {
       "bytes": 22037,
       "path": "results/data/pinder_af2_180_manifest.csv",
       "rows": 180,

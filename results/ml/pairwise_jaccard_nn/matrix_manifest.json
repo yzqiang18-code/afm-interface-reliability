@@ -1,0 +1,252 @@
+{
+  "created_at_utc": "2026-08-20T09:04:08.393635+00:00",
+  "inputs": {
+    "candidates": {
+      "path": "results/data/training500_candidates.csv.gz",
+      "rows": 10000,
+      "sha256": "780954ec8f3a3af4420a71b872bc0426b6d1f4ae1db6863d21175bef140d4f18"
+    },
+    "pairs": {
+      "path": "results/data/training500_consistency_pairs.csv.gz",
+      "rows": 95000,
+      "sha256": "46321742c8a10f5dba4110df1c7ca59ef3a81ea8764a1b6fbf5bdda9dcbeb7ab"
+    }
+  },
+  "outputs": {
+    "matrices": {
+      "path": "results/ml/pairwise_jaccard_nn/matrices.npz",
+      "systems": 500
+    },
+    "row_table": {
+      "path": "results/data/training500_jaccard_rows.csv.gz",
+      "rows": 10000,
+      "systems": 500
+    }
+  },
+  "schema": {
+    "key_columns": [
+      "complex_id",
+      "model_weight",
+      "seed"
+    ],
+    "row_19_columns": [
+      "j_0",
+      "j_1",
+      "j_2",
+      "j_3",
+      "j_4",
+      "j_5",
+      "j_6",
+      "j_7",
+      "j_8",
+      "j_9",
+      "j_10",
+      "j_11",
+      "j_12",
+      "j_13",
+      "j_14",
+      "j_15",
+      "j_16",
+      "j_17",
+      "j_18"
+    ],
+    "row_20_columns": [
+      "j20_0",
+      "j20_1",
+      "j20_2",
+      "j20_3",
+      "j20_4",
+      "j20_5",
+      "j20_6",
+      "j20_7",
+      "j20_8",
+      "j20_9",
+      "j20_10",
+      "j20_11",
+      "j20_12",
+      "j20_13",
+      "j20_14",
+      "j20_15",
+      "j20_16",
+      "j20_17",
+      "j20_18",
+      "j20_19"
+    ],
+    "slot_order": [
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        2,
+        0
+      ],
+      [
+        2,
+        1
+      ],
+      [
+        2,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        0
+      ],
+      [
+        3,
+        1
+      ],
+      [
+        3,
+        2
+      ],
+      [
+        3,
+        3
+      ],
+      [
+        4,
+        0
+      ],
+      [
+        4,
+        1
+      ],
+      [
+        4,
+        2
+      ],
+      [
+        4,
+        3
+      ],
+      [
+        5,
+        0
+      ],
+      [
+        5,
+        1
+      ],
+      [
+        5,
+        2
+      ],
+      [
+        5,
+        3
+      ]
+    ]
+  },
+  "stats": {
+    "candidates_with_mean_j": 9994,
+    "impute_method": "mean",
+    "imputed_cell_count": 216,
+    "invalid_pair_count": 108,
+    "invalid_pair_fraction": 0.0011368421052631579,
+    "mean_j_summary": {
+      "mean": 0.4903129226734418,
+      "median": 0.48376525392060676
+    },
+    "n_slots": 20,
+    "slot_order": [
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        2,
+        0
+      ],
+      [
+        2,
+        1
+      ],
+      [
+        2,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        0
+      ],
+      [
+        3,
+        1
+      ],
+      [
+        3,
+        2
+      ],
+      [
+        3,
+        3
+      ],
+      [
+        4,
+        0
+      ],
+      [
+        4,
+        1
+      ],
+      [
+        4,
+        2
+      ],
+      [
+        4,
+        3
+      ],
+      [
+        5,
+        0
+      ],
+      [
+        5,
+        1
+      ],
+      [
+        5,
+        2
+      ],
+      [
+        5,
+        3
+      ]
+    ]
+  }
+}

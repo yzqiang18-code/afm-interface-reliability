@@ -67,6 +67,27 @@ group-softmax; this small, repeatedly inspected subset is descriptive only.
 These metric-dependent observations motivate further ranking work but do not
 support a claim of general or statistically significant ranking improvement.
 
+## Exploratory Jaccard-matrix neural network
+
+A further exploratory Training500 study built a 20×20 within-system
+contact-Jaccard matrix per system and trained a small shared-weight PyTorch MLP
+on its rows (1×19 and 1×20 per candidate), reranking by argmax under the same
+grouped five-fold discipline. The result is negative and significant on the
+primary endpoint: the 1×19 and 1×20 models selected an acceptable structure for
+54.0% and 53.2% of systems versus 60.0% for AF-M rank-1 (paired differences
+`-6.0` and `-6.8` percentage points; 95% CIs `-9.2 to -3.2` and `-10.4 to -3.4`).
+The models were also worse than a scalar `mean_j` ridge and than Candidate Ridge
+v1 (regenerated grouped OOF, which reproduced the committed v1 numbers exactly).
+Candidate-level ROC-AUC was 0.716/0.705 versus 0.854 for v1. The one positive
+sub-signal was inside the 88 rerank-rescuable systems, where the 1×20 model
+reached recall@3 of 42.0% (vs 23.9% for AF-M) and rescued 23/88 rank-1
+failures — but it broke many more rank-1-acceptable systems, so net top-1
+performance was significantly worse. The matrix form of consistency therefore
+does not beat AF-M's own confidence or scalar summaries on selection; it again
+reinforces that consistency locates where acceptable candidates cluster, not
+which candidate is best. This study is Training500-only because the public data
+has no holdout pair table. Full details are in [NN_JACCARD.md](NN_JACCARD.md).
+
 ## Exploratory cluster structure
 
 A separate Training500 diagnostic asked why the acceptable minority remains
@@ -144,3 +165,6 @@ itself to reorder candidates within one system.
 - [Rerank-rescuable ranking diagnostics](../results/tables/rerank_rescuable_ranking.csv)
 - [Training500 candidate-pair diagnostic data](../results/data/training500_consistency_pairs.csv.gz)
 - [Selected result tables](../results/tables/README.md)
+- [Jaccard-matrix neural network](NN_JACCARD.md)
+- [Jaccard-matrix rows data](../results/data/training500_jaccard_rows.csv.gz)
+- [Jaccard-matrix NN training summary](../results/ml/pairwise_jaccard_nn_1x19/training_summary.json)

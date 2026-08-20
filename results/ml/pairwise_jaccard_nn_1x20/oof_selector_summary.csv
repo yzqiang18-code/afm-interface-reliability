@@ -1,0 +1,3 @@
+selector,systems,acceptable_rate,medium_high_rate,high_rate,mean_DockQ,median_DockQ
+AF-M full-precision rank-1,500,0.6,0.476,0.178,0.42434334416814606,0.4482989660479395
+pairwise_jaccard_nn_1x20,500,0.532,0.394,0.136,0.3689247343526555,0.27503090971221605

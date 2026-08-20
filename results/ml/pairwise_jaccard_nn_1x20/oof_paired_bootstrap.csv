@@ -1,0 +1,2 @@
+systems,bootstrap_replicates,random_seed,delta_acceptable_rate,delta_acceptable_rate_ci_low,delta_acceptable_rate_ci_high,delta_mean_DockQ,delta_mean_DockQ_ci_low,delta_mean_DockQ_ci_high
+500,2000,20260820,-0.06799999999999995,-0.10399999999999998,-0.03400000000000003,-0.05541860981549057,-0.07528468050735691,-0.036339891805284096
