@@ -3,8 +3,8 @@ message: "If you use this research software, please cite this repository and the
 title: "AFM Interface Reliability: Reliability Assessment and Failure-Mode Analysis of AlphaFold-Multimer Protein Complex Predictions"
 type: software
 authors:
-  - family-names: Zhou
-    given-names: Qiangyi
+  - family-names: Qiang
+    given-names: Yizhou
 year: 2026
 date-released: 2026-08-13
 license: MIT
