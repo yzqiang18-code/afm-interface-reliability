@@ -1,6 +1,6 @@
 # Consistency as a system-level trust signal
 
-This note records a secondary observation: **ensemble consistency tracks whether
+This note records a core secondary finding: **ensemble consistency tracks whether
 AF-M is likely to be right (a system-level trust signal), not which of the 20
 candidates is best (a selection signal).** It complements the primary negative
 result of the baseline reranker and explains where selection failures occur.
@@ -86,6 +86,24 @@ worse than rank 10) and median rank **5** on the holdout (range 3–20). Saving
 these systems requires lifting a candidate from around rank 6 to rank 1, which
 is exactly what the weak within-system signal (median within-system `Spearman ≈
 0.227`; see [Results](RESULTS.md)) cannot reliably do.
+
+Exploratory within-rank and group-softmax models modestly enriched acceptable
+candidates near the top of the Training500 rescuable subset: recall@3 changed
+from 23.9% under AF-M ranking to 34.1% and 30.7%, respectively. Median
+first-acceptable rank remained 6, and recall@5 did not improve. This is a
+metric-dependent ranking signal rather than evidence of a general selector
+improvement; exact descriptive values are in
+[`rerank_rescuable_ranking.csv`](../results/tables/rerank_rescuable_ranking.csv).
+
+The acceptable minority is also strongly cluster-structured. The 20 candidates
+in a rescuable system formed a median of 7.5 contact clusters, and the dominant
+acceptable cluster had median purity 1.00. However, its median rank by
+cluster-mean ipTM was 2.5, and the top-ipTM cluster was entirely wrong in 84.1%
+of rescuable systems. Hand-built consistency interactions and cluster gates did
+not turn this diagnostic structure into a net top-1 gain. These post-hoc results
+motivate new candidate-specific signals rather than a rule that simply selects
+the largest, most consistent, or highest-ipTM cluster; see the
+[`pairwise consistency diagnostic`](../analysis/pairwise_consistency_diagnostic.py).
 
 ## Stable wrong: the hard core
 

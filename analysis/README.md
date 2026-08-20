@@ -17,3 +17,10 @@ The curated outputs are available in [`results/summaries/`](../results/summaries
 and [`results/tables/`](../results/tables/).
 For the shortest end-to-end reproduction, run
 `python scripts/reproduce_level2.py` from the repository root.
+
+`pairwise_consistency_diagnostic.py` is a separate post-hoc Training500
+diagnostic. It consumes the public, path-free
+`results/data/training500_consistency_pairs.csv.gz` table and examines whether
+candidate-pair agreement, contact clusters, interactions, or gated selectors
+add within-system signal. Sections 6–9 use labels for exploratory subgroup or
+cluster diagnostics and are not confirmatory model evaluations.

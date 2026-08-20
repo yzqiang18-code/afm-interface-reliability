@@ -16,19 +16,27 @@ estimates.
 
 ## Public derived tables
 
-Two compressed CSVs make the Level-2 analysis reproducible without distributing
-large structural files:
+Two compressed candidate-level CSVs make the Level-2 baseline reproducible,
+and one compressed candidate-pair table supports the exploratory consistency
+and cluster diagnostic without distributing large structural files:
 
 | File | Rows | Purpose |
 | --- | ---: | --- |
 | `results/data/training500_candidates.csv.gz` | 10,000 | Development features, labels, folds, and audit fields |
 | `results/data/pinder_af2_180_labels.csv.gz` | 3,600 | Frozen held-out features and labels for evaluation |
+| `results/data/training500_consistency_pairs.csv.gz` | 95,000 | All 190 unordered candidate pairs in each Training500 system, with contact-map and pose agreement |
 
 Each row represents one AF-M candidate. Candidate identity is the tuple
 `(complex_id, model_weight, seed)`. `DockQ` is native-referenced and must never
 be used as a prediction-time input. `acceptable_score` in generated prediction
 files is a logistic decision score in `[0, 1]`; it is used for ranking and is
 not claimed to be a calibrated probability.
+
+Each pair-table row is identified by `complex_id` and the two
+`(model_weight, seed)` candidate identities. Machine-specific prediction paths
+are deliberately removed. The pair table is not needed to retrain Candidate
+Ridge; it supports the post-hoc analysis in
+[`analysis/pairwise_consistency_diagnostic.py`](../analysis/pairwise_consistency_diagnostic.py).
 
 The corresponding manifest CSVs contain release, cohort, PDB, cluster, chain
 cluster, and accession provenance. `data_manifest.json` records row counts,
@@ -45,7 +53,8 @@ provenance; most readers should use `scripts/reproduce_level2.py` directly.
 Included:
 
 - cohort records and grouped folds;
-- the two derived candidate tables and provenance manifests;
+- two derived candidate tables, one path-free candidate-pair diagnostic table,
+  and provenance manifests;
 - model configuration, frozen model, label-free predictions, summaries, and
   audit tables;
 - code, tests, deterministic data-figure scripts, and vendored metric sources.

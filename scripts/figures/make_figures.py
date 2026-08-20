@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the three data figures from committed CSV/JSON artifacts."""
+"""Generate the four data figures from committed CSV artifacts."""
 
 from __future__ import annotations
 
@@ -46,6 +46,11 @@ def save_svg(fig: plt.Figure, path: Path) -> None:
         metadata={"Date": None, "Creator": "afm-interface-reliability"},
     )
     plt.close(fig)
+    path.write_text(
+        "\n".join(line.rstrip() for line in path.read_text(encoding="utf-8").splitlines())
+        + "\n",
+        encoding="utf-8",
+    )
 
 
 def wilson(successes: int, total: int, z: float = 1.959963984540054) -> tuple[float, float]:
@@ -56,7 +61,12 @@ def wilson(successes: int, total: int, z: float = 1.959963984540054) -> tuple[fl
     return float(center - half), float(center + half)
 
 
-def top1_figure(training_csv: Path, selector_choices_csv: Path, output: Path) -> None:
+def top1_figure(
+    training_csv: Path,
+    selector_choices_csv: Path,
+    within_rank_selector_choices_csv: Path,
+    output: Path,
+) -> None:
     training = pd.read_csv(training_csv, low_memory=False)
     top1 = (
         training.sort_values(
@@ -77,6 +87,7 @@ def top1_figure(training_csv: Path, selector_choices_csv: Path, output: Path) ->
         .first()
     )
     choices = pd.read_csv(selector_choices_csv)
+    within_rank_choices = pd.read_csv(within_rank_selector_choices_csv)
     groups = [
         ("Training500\nAF-M top-1", top1),
         ("Training500\noracle best-of-20", oracle),
@@ -88,6 +99,14 @@ def top1_figure(training_csv: Path, selector_choices_csv: Path, output: Path) ->
                 choices.loc[choices["selector"].eq(selector)],
             )
         )
+    groups.append(
+        (
+            "PINDER-AF2\nWithin-rank",
+            within_rank_choices.loc[
+                within_rank_choices["selector"].eq("candidate_ridge_v1_within_rank")
+            ],
+        )
+    )
 
     labels: list[str] = []
     rates: list[float] = []
@@ -103,11 +122,14 @@ def top1_figure(training_csv: Path, selector_choices_csv: Path, output: Path) ->
         highs.append(high)
 
     x = np.arange(len(labels))
-    fig, ax = plt.subplots(figsize=(7.2, 3.8))
+    fig, ax = plt.subplots(figsize=(8.4, 4.0))
+    rate_array = np.asarray(rates)
+    low_array = np.asarray(lows)
+    high_array = np.asarray(highs)
     ax.errorbar(
-        x,
-        rates,
-        yerr=[np.asarray(rates) - lows, np.asarray(highs) - rates],
+        x[:4],
+        rate_array[:4],
+        yerr=[rate_array[:4] - low_array[:4], high_array[:4] - rate_array[:4]],
         fmt="o",
         markersize=7,
         capsize=4,
@@ -115,13 +137,34 @@ def top1_figure(training_csv: Path, selector_choices_csv: Path, output: Path) ->
         ecolor=COLORS["gray"],
         linewidth=1.4,
     )
+    ax.errorbar(
+        x[4:],
+        rate_array[4:],
+        yerr=[rate_array[4:] - low_array[4:], high_array[4:] - rate_array[4:]],
+        fmt="o",
+        markersize=7,
+        capsize=4,
+        color=COLORS["orange"],
+        ecolor=COLORS["orange"],
+        linewidth=1.4,
+    )
     for index, rate in enumerate(rates):
         ax.text(index, rate + 0.045, f"{rate:.1%}", ha="center", va="bottom")
     ax.set_xticks(x, labels)
     ax.set_ylabel("Acceptable selected structure (DockQ ≥ 0.23)")
     ax.set_ylim(0.45, 0.87)
+    ax.set_xlim(-0.3, 4.5)
     ax.set_title("Sampling headroom did not translate into holdout reranking gain")
     ax.grid(axis="y", color="#E5E7EB", linewidth=0.8)
+    ax.text(
+        4,
+        rates[4] - 0.055,
+        "+1/180 vs AF-M\npaired 95% CI includes 0",
+        ha="center",
+        va="top",
+        fontsize=8,
+        color=COLORS["orange"],
+    )
     save_svg(fig, output)
 
 
@@ -152,6 +195,75 @@ def metric_figure(metric_csv: Path, within_csv: Path, output: Path) -> None:
     save_svg(fig, output)
 
 
+def within_system_reranking_figure(summary_csv: Path, output: Path) -> None:
+    summary = pd.read_csv(summary_csv).set_index("metric")["value"]
+    labels = ["Candidate Ridge v1", "AF-M ranking", "Within-rank"]
+    medians = np.asarray(
+        [
+            summary["median_within_system_spearman_candidate_ridge_v1"],
+            summary["median_within_system_spearman_AF_M_ranking"],
+            summary["median_within_system_spearman_candidate_ridge_v1_within_rank"],
+        ],
+        dtype=float,
+    )
+    delta_afm = float(summary["delta_median_vs_AF_M_ranking"])
+    low_afm = float(summary["delta_median_vs_AF_M_ranking_ci_low"])
+    high_afm = float(summary["delta_median_vs_AF_M_ranking_ci_high"])
+    delta_ridge = float(summary["delta_median_vs_candidate_ridge_v1"])
+    low_ridge = float(summary["delta_median_vs_candidate_ridge_v1_ci_low"])
+    high_ridge = float(summary["delta_median_vs_candidate_ridge_v1_ci_high"])
+
+    fig, ax = plt.subplots(figsize=(7.6, 4.1))
+    x = np.arange(len(labels))
+    ax.bar(
+        x,
+        medians,
+        color=[COLORS["gray"], COLORS["blue"], COLORS["orange"]],
+        width=0.68,
+    )
+    for index, value in enumerate(medians):
+        ax.text(index, value + 0.007, f"{value:.3f}", ha="center", va="bottom")
+    ax.set_xticks(x, labels)
+    ax.set_ylim(0, 0.28)
+    ax.set_ylabel("Median within-system Spearman ρ")
+    ax.grid(axis="y", color="#E5E7EB", linewidth=0.8)
+
+    fig.suptitle(
+        "Within-rank has the highest point estimate, but no significant difference",
+        fontweight="bold",
+    )
+    fig.text(
+        0.5,
+        0.89,
+        "Median per-system Spearman ρ; grouped out-of-fold Training500 (n = 500)",
+        ha="center",
+        color=COLORS["gray"],
+    )
+    fig.text(
+        0.5,
+        0.075,
+        (
+            f"Within-rank − AF-M: {delta_afm:+.3f} "
+            f"(95% CI {low_afm:+.3f} to {high_afm:+.3f});  "
+            f"within-rank − Ridge v1: {delta_ridge:+.3f} "
+            f"({low_ridge:+.3f} to {high_ridge:+.3f})"
+        ),
+        ha="center",
+        fontsize=8.5,
+        color=COLORS["gray"],
+    )
+    fig.text(
+        0.5,
+        0.025,
+        "Paired bootstrap resampled the same systems for both methods; both intervals include zero.",
+        ha="center",
+        fontsize=8.5,
+        color=COLORS["gray"],
+    )
+    fig.subplots_adjust(top=0.79, bottom=0.24, left=0.12, right=0.98)
+    save_svg(fig, output)
+
+
 def ablation_figure(ablation_csv: Path, output: Path) -> None:
     frame = pd.read_csv(ablation_csv)
     labels = ["AF only", "+ physics", "+ ensemble", "all features"]
@@ -173,8 +285,10 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--training-csv", type=Path, required=True)
     parser.add_argument("--selector-choices", type=Path, required=True)
+    parser.add_argument("--within-rank-selector-choices", type=Path, required=True)
     parser.add_argument("--metric-table", type=Path, required=True)
     parser.add_argument("--within-system-table", type=Path, required=True)
+    parser.add_argument("--within-rank-summary", type=Path, required=True)
     parser.add_argument("--ablation-table", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     return parser.parse_args()
@@ -183,10 +297,19 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     configure_style()
-    top1_figure(args.training_csv, args.selector_choices, args.output_dir / "top1_vs_oracle.svg")
+    top1_figure(
+        args.training_csv,
+        args.selector_choices,
+        args.within_rank_selector_choices,
+        args.output_dir / "top1_vs_oracle.svg",
+    )
     metric_figure(args.metric_table, args.within_system_table, args.output_dir / "metric_performance.svg")
+    within_system_reranking_figure(
+        args.within_rank_summary,
+        args.output_dir / "within_system_reranking.svg",
+    )
     ablation_figure(args.ablation_table, args.output_dir / "ensemble_ablation.svg")
-    print(f"Generated three data figures in {args.output_dir}")
+    print(f"Generated four data figures in {args.output_dir}")
     return 0
 
 

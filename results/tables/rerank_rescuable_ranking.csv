@@ -1,0 +1,8 @@
+cohort,selector,systems,mean_first_acceptable_rank,median_first_acceptable_rank,recall_at_3,recall_at_5,acceptable_at_rank_1,analysis_status
+Training500,AF-M full-precision ranking,88,7.511363636363637,6.0,0.23863636363636365,0.4772727272727273,0,post_hoc_descriptive
+Training500,candidate_ridge_v1_within_rank,88,7.079545454545454,6.0,0.3409090909090909,0.4659090909090909,7,post_hoc_descriptive
+Training500,candidate_ridge_v2_group_softmax,88,7.318181818181818,6.0,0.3068181818181818,0.45454545454545453,4,post_hoc_descriptive
+PINDER-AF2,AF-M full-precision ranking,12,7.583333333333333,5.0,0.16666666666666666,0.5833333333333334,0,post_hoc_descriptive
+PINDER-AF2,candidate_ridge_v1,12,7.333333333333333,5.0,0.16666666666666666,0.5833333333333334,0,post_hoc_descriptive
+PINDER-AF2,candidate_ridge_v1_within_rank,12,6.75,4.5,0.16666666666666666,0.5833333333333334,1,post_hoc_descriptive
+PINDER-AF2,candidate_ridge_v2_group_softmax,12,6.916666666666667,5.0,0.16666666666666666,0.6666666666666666,0,post_hoc_descriptive

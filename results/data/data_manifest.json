@@ -13,6 +13,12 @@
       "sha256": "dac5705cc4266172361525f3432093da3c7d65a3a550a9c0179ef78eab479e43"
     },
     {
+      "bytes": 3883851,
+      "path": "results/data/training500_consistency_pairs.csv.gz",
+      "rows": 95000,
+      "sha256": "46321742c8a10f5dba4110df1c7ca59ef3a81ea8764a1b6fbf5bdda9dcbeb7ab"
+    },
+    {
       "bytes": 74524,
       "path": "results/data/training500_manifest.csv",
       "rows": 500,
@@ -36,6 +42,10 @@
     {
       "name": "pinder_af2_180_labels.csv",
       "sha256": "3422f22d718277034a394855b29bc8c54a9cfb7f7968e40876973a4ca31b79be"
+    },
+    {
+      "name": "afm23_5models_seeds0-3_consistency_pairs.csv",
+      "sha256": "34664230f16a71c861eb73f7f6334a410e3b8714a0ba908637d5db65fbe6cddb"
     },
     {
       "name": "pinder_2024-02_index.parquet",

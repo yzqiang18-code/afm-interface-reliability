@@ -1,62 +1,97 @@
 # AFM Interface Reliability
 
-An research project on the reliability of AlphaFold-Multimer
+A research project on the reliability of AlphaFold-Multimer
 (AF-M) protein–protein interface predictions. The central question is simple:
 when AF-M generates 20 candidates for one protein pair, can a small,
 interpretable model choose a better structure than AF-M's own ranking?
 
 ## Current result
 
-This repository documents the current stage of an ongoing project. The answer
-for the tested baseline is **no**: on the held-out 180-system PINDER-AF2
-cohort, AF-M rank-1 and the five-feature Candidate Ridge model both selected an
-acceptable structure (`DockQ >= 0.23`) for **58.33%** of systems. Mean DockQ
-changed from **0.45240** to **0.45385**; the paired difference was `+0.00145`
-(95% bootstrap CI `-0.00129` to `+0.00472`). Candidate-level ROC-AUC was high
-(`0.934`), but that did not translate into better within-system selection. This
-negative result is retained because it is the currently supported conclusion
-for this baseline.
+This repository documents the current stage of an ongoing project. Across the
+evaluated rerankers, there is **no statistically significant improvement in the
+primary top-1 selection endpoint**. On the 180-system PINDER-AF2 holdout, AF-M
+rank-1 and the five-feature Candidate Ridge v1 model both selected an acceptable
+structure (`DockQ >= 0.23`) for `58.33%` of systems. Mean DockQ changed from
+`0.45240` to `0.45385`; the paired difference was `+0.00145` (95% bootstrap CI
+`-0.00129` to `+0.00472`). The pooled candidate-level ROC-AUC was high (`0.934`),
+but this mostly reflects discrimination across systems and did not translate
+into better selection among the 20 candidates of one system.
 
-A within-system quantile-rank follow-up (`candidate_ridge_v1_within_rank`)
-replaced global standardization with per-system rank features. Its
-within-system ordering point estimate improved: on Training500 out-of-fold
-data the median within-system Spearman rose from `0.206` (v1 baseline) and
-`0.227` (AF-M's own ranking) to `0.243`. This difference is **not
-statistically significant** (system-level paired 95% CI `-0.018` to
-`+0.061` vs the v1 baseline). On the frozen PINDER-AF2 holdout it selected
-an acceptable structure for `58.89%` (106/180) versus `58.33%` (105/180)
-for both AF-M rank-1 and the v1 baseline — one additional system, with a
-paired 95% CI lower bound of `0.0000`. The selection conclusion is
-therefore unchanged.
+Two within-system follow-ups leave that conclusion unchanged. A quantile-rank
+variant (`candidate_ridge_v1_within_rank`) increased the Training500
+out-of-fold median within-system Spearman from `0.227` for AF-M ranking and
+`0.206` for Candidate Ridge v1 to `0.243`, but the paired confidence intervals
+included zero. It selected 106/180 acceptable holdout structures, one more than
+AF-M and v1, while the 95% CI for the acceptable-rate difference still included
+zero. A conditional-logit group-softmax variant selected 105/180, the same as
+AF-M, and likewise showed no significant top-1 improvement.
+
+There is nevertheless a limited, exploratory signal at the top of the list. In
+the 88 outcome-defined rerank-rescuable Training500 systems, the mean rank of
+the first acceptable candidate changed from `7.51` under AF-M ranking to `7.08`
+with within-system ranks and `7.32` with group-softmax; recall@3 changed from
+`23.9%` to `34.1%` and `30.7%`. Median rank remained 6 and recall@5 did not
+improve, so this is evidence of modest, metric-dependent front-of-list
+enrichment, not a demonstrated general improvement in ranking or AF-M
+accuracy. The corresponding holdout subset contains only 12 systems and is
+treated as descriptive.
 
 ![Current selection result](figures/top1_vs_oracle.svg)
+
+The corresponding within-system result is shown separately below. The
+within-rank point estimate is higher, but both paired confidence intervals
+cross zero; it is therefore a promising direction to test, not a demonstrated
+ranking improvement. Here, *paired* means that each bootstrap replicate
+resampled the same system IDs for both methods before subtracting their cohort
+median Spearman values.
+
+![Within-system ordering follow-up](figures/within_system_reranking.svg)
 
 Training500 shows why the problem is worth studying: AF-M top-1 was acceptable
 for **60.0%** of systems, while a retrospective best-of-20 oracle reached
 **77.6%**. The gap is sampling headroom, not evidence that the current model can
 recover it.
 
-A related secondary finding: ensemble consistency is a system-level trust
-signal, not a selection signal — more consistent systems are more likely to
-contain acceptable candidates and to have a correct AF-M rank-1 (see
-[Consistency](docs/CONSISTENCY.md)).
+A core secondary finding is that ensemble consistency is a reproducible
+**system-level trust signal**, not a candidate-selection signal. Contact-map
+consistency correlated with the fraction of acceptable candidates at `0.655`
+on Training500 and `0.800` on PINDER-AF2, and with rank-1 acceptability at
+`0.437` and `0.737`. More consistent ensembles are therefore usually more
+trustworthy. They are not guaranteed to be correct: 17 Training500 systems and
+4 holdout systems were highly consistent even though all 20 candidates were
+wrong. See [Consistency](docs/CONSISTENCY.md).
 
 ## Planned follow-ups
 
-The current negative result leaves the within-system ordering bottleneck
-unresolved. Two follow-up designs are planned, developed on Training500 grouped
-out-of-fold validation and applied to the frozen PINDER-AF2 holdout only after
-they are frozen, under the same discipline as the baseline:
+The next stage separates two decisions that require different signals:
 
-- **Within-system feature standardization.** Features are currently standardized
-  with development-wide statistics, so the baseline mostly sees between-system
-  differences. Standardizing each feature within its own 20-candidate system
-  would let the model rank candidates relative to that system, directly
-  targeting the weak within-system signal (median Spearman ≈ 0.227).
-- **Continuous regression target.** The baseline predicts the binary
-  `DockQ >= 0.23` label, while within-system selection needs to order candidates
-  by degree of quality. Predicting continuous DockQ (still label-only, never an
-  input) should fit that ordering objective more closely.
+An exploratory Training500 cluster diagnostic provides the motivation. In the
+88 rerank-rescuable systems, the 20 candidates formed a median of 7.5 contact
+clusters, and the dominant acceptable cluster had median purity 1.00. Yet that
+cluster had median rank 2.5 by cluster-mean ipTM, and the top-ipTM cluster was
+entirely wrong in 84% of these systems. Tested consistency interactions and
+hand-built cluster gates were net negative or tied overall. These post-hoc
+results suggest that acceptable candidates are strongly cluster-structured but
+often not the highest-confidence cluster; they motivate signals beyond the
+current scalar AF-M/PAE summaries. See the exploratory
+[`pairwise_consistency_diagnostic.py`](analysis/pairwise_consistency_diagnostic.py).
+
+- **System-level trust and sampling.** Use ensemble consistency to decide when
+  AF-M rank-1 is trustworthy and when a system needs additional sampling or a
+  changed MSA/modeling strategy. Consistency cannot distinguish a sampled-but-
+  misranked system from one in which every sampled candidate is wrong.
+- **Candidate-level ranking.** Add paired-MSA coevolution features and richer,
+  candidate-specific inter-chain PAE representations, then compare pairwise and
+  listwise objectives with group-softmax. The current model already uses
+  PAE-derived summaries (`pDockQ2-min`, `iLIS`, and `ipSAE`); the planned change
+  is to exploit residue-pair distributions, low-PAE regions, asymmetry, and
+  candidate-relative information rather than to introduce PAE for the first
+  time.
+- **Ranking-focused evaluation.** Track first-acceptable rank, MRR, recall@1/3/5,
+  within-system Spearman, and top-1 acceptable rate. Training500 grouped
+  out-of-fold results remain developmental. Because PINDER-AF2 has now been
+  inspected for several follow-ups, a new untouched test cohort is preferable
+  for future confirmatory claims.
 
 ## Study design
 
@@ -70,7 +105,7 @@ Candidate Ridge uses five native-independent inputs: full-precision ipTM, pTM,
 pDockQ2-min, iLIS, and ipSAE. All 20 candidates from a protein pair remain in
 the same development fold. DockQ is used only as a label and evaluation metric.
 
-The workflow diagram below is a fixed schematic overview; the three
+The workflow diagram below is a fixed schematic overview; the four
 quantitative SVGs in `figures/` are regenerated from committed tables by
 `scripts/figures/make_figures.py`.
 
@@ -78,9 +113,11 @@ quantitative SVGs in `figures/` are regenerated from committed tables by
 
 ## Reproduce the public analysis
 
-The repository includes the two derived candidate tables needed to retrain and
-evaluate the baseline. It does not include native structures, predicted PDBs,
-MSAs, AlphaFold parameters, or PAE JSON files.
+The repository includes the two derived candidate-level tables needed to
+retrain and evaluate the baseline. A separate path-free candidate-pair table
+supports the exploratory consistency and cluster diagnostic; it is not required
+for baseline reproduction. The repository does not include native structures,
+predicted PDBs, MSAs, AlphaFold parameters, or PAE JSON files.
 
 ```bash
 conda env create -f environment.yml
@@ -90,9 +127,11 @@ conda run -n afm-interface-reliability python scripts/reproduce_level2.py
 ```
 
 The last command retrains the model, predicts the held-out candidates, evaluates
-both selectors, and regenerates all three data figures in `reproduced/`. It runs
+both selectors, and regenerates all four data figures in `reproduced/`. It runs
 on CPU and refuses to overwrite a non-empty output directory unless
-`--overwrite` is supplied.
+`--overwrite` is supplied. The within-rank panels are regenerated from the
+committed follow-up selector and bootstrap-summary tables; this command does not
+retrain that follow-up model.
 
 ## Scientific safeguards
 
@@ -119,7 +158,7 @@ on CPU and refuses to overwrite a non-empty output directory unless
 analysis/          Statistical analysis used for Training500
 configs/           Frozen cohort records and model configuration
 docs/              Methods, results, limitations, data notes, references
-figures/           One workflow diagram and three generated SVG figures
+figures/           One workflow diagram and four generated SVG figures
 results/data/      Public derived candidate tables and manifests
 results/audits/    Chain-assignment and split-overlap audits
 results/ml/        Frozen model, predictions, and evaluation evidence

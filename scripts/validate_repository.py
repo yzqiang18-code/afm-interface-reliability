@@ -81,6 +81,7 @@ def main() -> int:
         "results/data/data_manifest.json",
         "results/data/training500_candidates.csv.gz",
         "results/data/pinder_af2_180_labels.csv.gz",
+        "results/data/training500_consistency_pairs.csv.gz",
         "results/data/training500_manifest.csv",
         "results/data/pinder_af2_180_manifest.csv",
         "results/audits/README.md",
@@ -97,6 +98,8 @@ def main() -> int:
         "results/ml/candidate_ridge_v1/evaluation_summary.json",
         "results/ml/candidate_ridge_v1/holdout/pinder_af2_180_predictions.csv",
         "results/ml/candidate_ridge_v1/holdout/selector_choices.csv",
+        "results/ml/candidate_ridge_v1_within_rank/holdout/selector_choices.csv",
+        "results/ml/candidate_ridge_v1_within_rank/within_system_ranking.csv",
         "scripts/data/prepare_public_data.py",
         "scripts/figures/make_figures.py",
         "scripts/reproduce_level2.py",
@@ -114,6 +117,7 @@ def main() -> int:
         "figures/workflow.svg",
         "figures/top1_vs_oracle.svg",
         "figures/metric_performance.svg",
+        "figures/within_system_reranking.svg",
         "figures/ensemble_ablation.svg",
     ]
     for relative in required:
@@ -159,10 +163,13 @@ def main() -> int:
     manifest = read_json("results/data/data_manifest.json")
     if manifest.get("schema_version") != 1:
         errors.append("public data manifest schema version must be 1")
+    if manifest.get("contains_local_paths") is not False:
+        errors.append("public data manifest must declare contains_local_paths=false")
     manifest_records = {row["path"]: row for row in manifest.get("artifacts", [])}
     expected_public = {
         "results/data/training500_candidates.csv.gz": (10000, 500),
         "results/data/pinder_af2_180_labels.csv.gz": (3600, 180),
+        "results/data/training500_consistency_pairs.csv.gz": (95000, 500),
         "results/data/training500_manifest.csv": (500, 500),
         "results/data/pinder_af2_180_manifest.csv": (180, 180),
     }
@@ -174,7 +181,11 @@ def main() -> int:
         if record is None:
             errors.append(f"data manifest is missing {relative}")
         else:
-            if int(record["rows"]) != expected_rows or record["sha256"] != sha256(ROOT / relative):
+            if (
+                int(record["rows"]) != expected_rows
+                or int(record["bytes"]) != (ROOT / relative).stat().st_size
+                or record["sha256"] != sha256(ROOT / relative)
+            ):
                 errors.append(f"data manifest count/hash mismatch: {relative}")
         if len(rows) != expected_rows:
             errors.append(f"{relative}: expected {expected_rows} rows, found {len(rows)}")
@@ -196,6 +207,22 @@ def main() -> int:
         counts = Counter(row["complex_id"] for row in public_rows[relative])
         if set(counts.values()) != {20}:
             errors.append(f"{relative}: every system must have exactly 20 candidates")
+
+    pair_relative = "results/data/training500_consistency_pairs.csv.gz"
+    pair_fields = set(public_rows[pair_relative][0])
+    required_pair_fields = {
+        "complex_id", "rank_1", "model_weight_1", "seed_1",
+        "rank_2", "model_weight_2", "seed_2", "jaccard",
+        "jaccard_valid", "interface_residue_jaccard",
+        "receptor_aligned_ligand_rmsd",
+    }
+    if not required_pair_fields.issubset(pair_fields):
+        errors.append(f"{pair_relative}: missing pairwise diagnostic fields")
+    if any("path" in field.lower() for field in pair_fields):
+        errors.append(f"{pair_relative}: path columns must not be published")
+    pair_counts = Counter(row["complex_id"] for row in public_rows[pair_relative])
+    if set(pair_counts.values()) != {190}:
+        errors.append(f"{pair_relative}: every system must have exactly 190 pairs")
 
     model = read_json("results/ml/candidate_ridge_v1/model.json")
     if model.get("model_schema_version") != 2:
@@ -328,6 +355,7 @@ def main() -> int:
     for relative in [
         "results/data/training500_candidates.csv.gz",
         "results/data/pinder_af2_180_labels.csv.gz",
+        "results/data/training500_consistency_pairs.csv.gz",
         "results/audits/chain_exchange/candidate_changes.csv.gz",
     ]:
         with gzip.open(ROOT / relative, "rb") as handle:

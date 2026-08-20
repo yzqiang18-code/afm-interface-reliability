@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="525.031766pt" height="298.357992pt" viewBox="0 0 525.031766 298.357992" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>afm-interface-reliability</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 298.357992
+L 525.031766 298.357992
+L 525.031766 0
+L 0 0
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 47.239766 225.648
+L 517.831766 225.648
+L 517.831766 63.288
+L 47.239766 63.288
+z
+" style="fill: #ffffff"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 68.630311 225.648
+L 177.179348 225.648
+L 177.179348 106.188709
+L 68.630311 106.188709
+z
+" clip-path="url(#p1cb60198b6)" style="fill: #6b7280"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 228.261247 225.648
+L 336.810284 225.648
+L 336.810284 94.218536
+L 228.261247 94.218536
+z
+" clip-path="url(#p1cb60198b6)" style="fill: #31688e"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 387.892184 225.648
+L 496.44122 225.648
+L 496.44122 84.825551
+L 387.892184 84.825551
+z
+" clip-path="url(#p1cb60198b6)" style="fill: #e38c2d"/>
+   </g>
+   <g id="matplotlib.axis_1">
+    <g id="xtick_1">
+     <g id="line2d_1">
+      <defs>
+       <path id="mfea44ac825" d="M 0 0
+L 0 3.5
+" style="stroke: #000000; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#mfea44ac825" x="122.904829" y="225.648" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_1">
+      <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle" x="122.904829" y="239.486594" transform="rotate(-0 122.904829 239.486594)">Candidate Ridge v1</text>
+     </g>
+    </g>
+    <g id="xtick_2">
+     <g id="line2d_2">
+      <g>
+       <use xlink:href="#mfea44ac825" x="282.535766" y="225.648" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_2">
+      <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle" x="282.535766" y="239.486594" transform="rotate(-0 282.535766 239.486594)">AF-M ranking</text>
+     </g>
+    </g>
+    <g id="xtick_3">
+     <g id="line2d_3">
+      <g>
+       <use xlink:href="#mfea44ac825" x="442.166702" y="225.648" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_3">
+      <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle" x="442.166702" y="239.486594" transform="rotate(-0 442.166702 239.486594)">Within-rank</text>
+     </g>
+    </g>
+   </g>
+   <g id="matplotlib.axis_2">
+    <g id="ytick_1">
+     <g id="line2d_4">
+      <path d="M 47.239766 225.648
+L 517.831766 225.648
+" clip-path="url(#p1cb60198b6)" style="fill: none; stroke: #e5e7eb; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_5">
+      <defs>
+       <path id="md0756a6d75" d="M 0 0
+L -3.5 0
+" style="stroke: #000000; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#md0756a6d75" x="47.239766" y="225.648" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_4">
+      <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: end" x="40.239766" y="229.066945" transform="rotate(-0 40.239766 229.066945)">0.00</text>
+     </g>
+    </g>
+    <g id="ytick_2">
+     <g id="line2d_6">
+      <path d="M 47.239766 196.655143
+L 517.831766 196.655143
+" clip-path="url(#p1cb60198b6)" style="fill: none; stroke: #e5e7eb; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_7">
+      <g>
+       <use xlink:href="#md0756a6d75" x="47.239766" y="196.655143" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_5">
+      <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: end" x="40.239766" y="200.074088" transform="rotate(-0 40.239766 200.074088)">0.05</text>
+     </g>
+    </g>
+    <g id="ytick_3">
+     <g id="line2d_8">
+      <path d="M 47.239766 167.662286
+L 517.831766 167.662286
+" clip-path="url(#p1cb60198b6)" style="fill: none; stroke: #e5e7eb; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_9">
+      <g>
+       <use xlink:href="#md0756a6d75" x="47.239766" y="167.662286" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_6">
+      <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: end" x="40.239766" y="171.081231" transform="rotate(-0 40.239766 171.081231)">0.10</text>
+     </g>
+    </g>
+    <g id="ytick_4">
+     <g id="line2d_10">
+      <path d="M 47.239766 138.669429
+L 517.831766 138.669429
+" clip-path="url(#p1cb60198b6)" style="fill: none; stroke: #e5e7eb; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_11">
+      <g>
+       <use xlink:href="#md0756a6d75" x="47.239766" y="138.669429" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_7">
+      <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: end" x="40.239766" y="142.088374" transform="rotate(-0 40.239766 142.088374)">0.15</text>
+     </g>
+    </g>
+    <g id="ytick_5">
+     <g id="line2d_12">
+      <path d="M 47.239766 109.676571
+L 517.831766 109.676571
+" clip-path="url(#p1cb60198b6)" style="fill: none; stroke: #e5e7eb; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_13">
+      <g>
+       <use xlink:href="#md0756a6d75" x="47.239766" y="109.676571" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_8">
+      <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: end" x="40.239766" y="113.095517" transform="rotate(-0 40.239766 113.095517)">0.20</text>
+     </g>
+    </g>
+    <g id="ytick_6">
+     <g id="line2d_14">
+      <path d="M 47.239766 80.683714
+L 517.831766 80.683714
+" clip-path="url(#p1cb60198b6)" style="fill: none; stroke: #e5e7eb; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_15">
+      <g>
+       <use xlink:href="#md0756a6d75" x="47.239766" y="80.683714" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_9">
+      <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: end" x="40.239766" y="84.10266" transform="rotate(-0 40.239766 84.10266)">0.25</text>
+     </g>
+    </g>
+    <g id="text_10">
+     <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle" x="14.038594" y="144.468" transform="rotate(-90 14.038594 144.468)">Median within-system Spearman ρ</text>
+    </g>
+   </g>
+   <g id="patch_6">
+    <path d="M 47.239766 225.648
+L 47.239766 63.288
+" style="fill: none; stroke: #000000; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_7">
+    <path d="M 47.239766 225.648
+L 517.831766 225.648
+" style="fill: none; stroke: #000000; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="text_11">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle" x="122.904829" y="99.9676" transform="rotate(-0 122.904829 99.9676)">0.206</text>
+   </g>
+   <g id="text_12">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle" x="282.535766" y="87.997426" transform="rotate(-0 282.535766 87.997426)">0.227</text>
+   </g>
+   <g id="text_13">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle" x="442.166702" y="78.604442" transform="rotate(-0 442.166702 78.604442)">0.243</text>
+   </g>
+  </g>
+  <g id="text_14">
+   <text style="font-weight: 700; font-size: 10.8px; font-family: 'DejaVu Sans'; text-anchor: middle" x="255.175766" y="15.406313" transform="rotate(-0 255.175766 15.406313)">Within-rank has the highest point estimate, but no significant difference</text>
+  </g>
+  <g id="text_15">
+   <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #6b7280" x="255.175766" y="33.768" transform="rotate(-0 255.175766 33.768)">Median per-system Spearman ρ; grouped out-of-fold Training500 (n = 500)</text>
+  </g>
+  <g id="text_16">
+   <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #6b7280" x="255.175766" y="274.356" transform="rotate(-0 255.175766 274.356)">Within-rank − AF-M: +0.016 (95% CI -0.026 to +0.047);  within-rank − Ridge v1: +0.037 (-0.018 to +0.061)</text>
+  </g>
+  <g id="text_17">
+   <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #6b7280" x="255.175766" y="289.116" transform="rotate(-0 255.175766 289.116)">Paired bootstrap resampled the same systems for both methods; both intervals include zero.</text>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p1cb60198b6">
+   <rect x="47.239766" y="63.288" width="470.592" height="162.36"/>
+  </clipPath>
+ </defs>
+</svg>

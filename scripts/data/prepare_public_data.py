@@ -26,7 +26,10 @@ import pandas as pd
 EXPECTED_TRAINING_SYSTEMS = 500
 EXPECTED_HOLDOUT_SYSTEMS = 180
 EXPECTED_CANDIDATES = 20
+EXPECTED_CONSISTENCY_PAIRS = 95000
+EXPECTED_PAIRS_PER_SYSTEM = 190
 UNDEFINED_ACCESSIONS = frozenset({"", "UNDEFINED", "NONE", "NAN", "NA"})
+PAIR_PATH_COLUMNS = ("prediction_path_1", "prediction_path_2")
 MANIFEST_COLUMNS = [
     "id",
     "pdb_id",
@@ -92,6 +95,43 @@ def read_ids(path: Path) -> list[str]:
     if len(values) != len(set(values)):
         raise ValueError(f"Duplicate IDs in {path}")
     return values
+
+
+def sanitize_consistency_pairs(frame: pd.DataFrame) -> pd.DataFrame:
+    """Remove machine paths and validate the public Training500 pair table."""
+
+    required = {
+        "complex_id",
+        "seed_1",
+        "model_weight_1",
+        "rank_1",
+        "prediction_path_1",
+        "seed_2",
+        "model_weight_2",
+        "rank_2",
+        "prediction_path_2",
+        "jaccard",
+        "jaccard_valid",
+        "interface_residue_jaccard",
+        "receptor_aligned_ligand_rmsd",
+    }
+    missing = sorted(required.difference(frame.columns))
+    if missing:
+        raise ValueError(f"Consistency-pair table lacks columns: {missing}")
+    if len(frame) != EXPECTED_CONSISTENCY_PAIRS:
+        raise ValueError(
+            f"Consistency-pair table must contain {EXPECTED_CONSISTENCY_PAIRS} rows"
+        )
+    if frame["complex_id"].nunique() != EXPECTED_TRAINING_SYSTEMS:
+        raise ValueError("Consistency-pair table must contain 500 systems")
+    per_system = frame.groupby("complex_id").size()
+    if not per_system.eq(EXPECTED_PAIRS_PER_SYSTEM).all():
+        raise ValueError("Every system must contain all 190 unordered candidate pairs")
+
+    cleaned = frame.drop(columns=list(PAIR_PATH_COLUMNS)).copy()
+    if any("path" in column.lower() for column in cleaned.columns):
+        raise ValueError("A path-like column remains in the public pair table")
+    return cleaned
 
 
 def accession_columns(ids: pd.Series) -> tuple[pd.Series, pd.Series]:
@@ -286,6 +326,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--training-csv", type=Path, required=True)
     parser.add_argument("--holdout-csv", type=Path, required=True)
+    parser.add_argument("--consistency-pairs-csv", type=Path, required=True)
     parser.add_argument("--index-parquet", type=Path, required=True)
     parser.add_argument("--training-assignment", type=Path, required=True)
     parser.add_argument("--holdout-ids", type=Path, required=True)
@@ -299,6 +340,7 @@ def main() -> int:
     inputs = [
         args.training_csv,
         args.holdout_csv,
+        args.consistency_pairs_csv,
         args.index_parquet,
         args.training_assignment,
         args.holdout_ids,
@@ -314,6 +356,7 @@ def main() -> int:
     outputs = [
         data_dir / "training500_candidates.csv.gz",
         data_dir / "pinder_af2_180_labels.csv.gz",
+        data_dir / "training500_consistency_pairs.csv.gz",
         data_dir / "training500_manifest.csv",
         data_dir / "pinder_af2_180_manifest.csv",
         data_dir / "data_manifest.json",
@@ -328,6 +371,8 @@ def main() -> int:
 
     training_raw = pd.read_csv(args.training_csv, low_memory=False)
     holdout_raw = pd.read_csv(args.holdout_csv, low_memory=False)
+    consistency_pairs_raw = pd.read_csv(args.consistency_pairs_csv, low_memory=False)
+    consistency_pairs = sanitize_consistency_pairs(consistency_pairs_raw)
     training, training_changes, training_summary = correct_chain_exchange(
         training_raw,
         cohort="Training500",
@@ -357,6 +402,9 @@ def main() -> int:
 
     atomic_csv_gz(data_dir / "training500_candidates.csv.gz", training)
     atomic_csv_gz(data_dir / "pinder_af2_180_labels.csv.gz", holdout)
+    atomic_csv_gz(
+        data_dir / "training500_consistency_pairs.csv.gz", consistency_pairs
+    )
     atomic_csv(data_dir / "training500_manifest.csv", training_manifest)
     atomic_csv(data_dir / "pinder_af2_180_manifest.csv", holdout_manifest)
     atomic_csv_gz(
@@ -383,6 +431,10 @@ def main() -> int:
     for path, rows in [
         (data_dir / "training500_candidates.csv.gz", len(training)),
         (data_dir / "pinder_af2_180_labels.csv.gz", len(holdout)),
+        (
+            data_dir / "training500_consistency_pairs.csv.gz",
+            len(consistency_pairs),
+        ),
         (data_dir / "training500_manifest.csv", len(training_manifest)),
         (data_dir / "pinder_af2_180_manifest.csv", len(holdout_manifest)),
     ]:
@@ -401,6 +453,10 @@ def main() -> int:
             "source_files": [
                 {"name": args.training_csv.name, "sha256": sha256_file(args.training_csv)},
                 {"name": args.holdout_csv.name, "sha256": sha256_file(args.holdout_csv)},
+                {
+                    "name": args.consistency_pairs_csv.name,
+                    "sha256": sha256_file(args.consistency_pairs_csv),
+                },
                 {"name": args.index_parquet.name, "sha256": sha256_file(args.index_parquet)},
             ],
             "artifacts": artifact_records,
