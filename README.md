@@ -87,11 +87,6 @@ current scalar AF-M/PAE summaries. See the exploratory
   is to exploit residue-pair distributions, low-PAE regions, asymmetry, and
   candidate-relative information rather than to introduce PAE for the first
   time.
-- **Ranking-focused evaluation.** Track first-acceptable rank, MRR, recall@1/3/5,
-  within-system Spearman, and top-1 acceptable rate. Training500 grouped
-  out-of-fold results remain developmental. Because PINDER-AF2 has now been
-  inspected for several follow-ups, a new untouched test cohort is preferable
-  for future confirmatory claims.
 
 ## Study design
 
